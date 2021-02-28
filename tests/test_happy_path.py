@@ -1,4 +1,4 @@
-from brownie import Wei
+from brownie import Wei, reverts
 from brownie.network.state import Chain
 
 def test_happy_path(
@@ -42,8 +42,22 @@ def test_happy_path(
     assert ldo_token.balanceOf(joint_campaign.address) == LDO_REWARD_AMOUNT
     assert ldo_token.balanceOf(rewards_manager.address) == 0
 
+    # Pass half a period
 
-    # Pass half a period, withdraw rewards
+    chain.sleep(REWARDS_DURATION // 2)
+    chain.mine()
+
+    # before rewards are marked claimable, claim fails
+    assert not joint_campaign.collabTokensClaimable({'from': stranger})
+    with reverts('At least one reward token must be claimable'):
+        joint_campaign.getReward(staking_token_whale, {'from': stranger})
+
+    # set collab rewards claimable
+    joint_campaign.setCollabTokensClaimable(True, {'from': arcx_deployer})
+    assert joint_campaign.collabTokensClaimable({'from': stranger})
+
+
+    # Withdraw rewards
 
     chain.sleep(REWARDS_DURATION // 2)
     chain.mine()
