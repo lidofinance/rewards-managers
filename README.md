@@ -1,11 +1,11 @@
 # Balancer rewards manager
 
-This repository contains Manager contract for Balancer Merkle Rewards contract.
-It allows to limitate allowance of rewards token for distributing it with Balancer Merkle contract.
+This repository contains Lido reward manager contract for Balancer Merkle Rewards contract.
+It periodically approves certain amount of LDO to be spendable by Balancer contract.
 
 # Rewards Manager
 
-This contract should be provided as owner for Balancer Merkle contract
+The reward manager contract should be set as `owner` of the Balancer Merkle contract.
 
 ## Deploying Environment
 
@@ -22,7 +22,7 @@ This contract should be provided as owner for Balancer Merkle contract
 
 ##### `transfer_ownership(_to: address)`
 
-Changes owner. Could be called from owner only
+Changes `OWNER`. Can be called by owner only.
 
 Events:
 
@@ -33,7 +33,7 @@ event OwnerChanged:
 
 ##### `change_allocator(_new_allocator: address)`
 
-Changes allocator. Could be called from owner only
+Changes `ALLOCATOR`. Can be called by owner only.
 
 Events:
 
@@ -44,7 +44,7 @@ event AllocatorChanged:
 
 ##### `change_rewards_limit(_new_limit: uint256)`
 
-Changes reward token limit per period `rewards_period_duration`. Could be called from owner only. 
+Changes reward token limit per period `rewards_period_duration`. Can be called by owner only. 
 
 Events:
 ```vyper=
@@ -52,11 +52,11 @@ event RewardsLimitChanged:
     new_limit: uint256
 ```
 
-Updates current allowance and set rewards limit for next periods
+Updates current allowance and set rewards limit for next periods.
 
 ##### `pause()`
 
-Stops allowance updating and rejects `seedAllowance` calling. Could be called from owner only.
+Stops updating allowance and rejects `seedAllowance` calls. Can be called by owner only.
 
 Events:
 ```vyper=
@@ -66,7 +66,7 @@ event Paused:
 
 ##### `unpause()`
 
-Resume allowance updating and allows `seedAllowance` calling. Could be called from owner only.
+Resumes updating allowance and allows `seedAllowance` calls. Can be called by owner only.
 
 Events:
 ```vyper=
@@ -76,7 +76,7 @@ event Unpaused:
 
 ##### `recover_erc20(_token: address, _recipient: address = msg.sender)`
 
-Transfers the whole balance of the given ERC20 token from self to the recipient. Could be called from owner only.
+Transfers the whole balance of the given ERC20 token to the recipient. Can be called by owner only.
 
 
 Events:
@@ -92,14 +92,14 @@ event ERC20TokenRecovered:
 
 ##### `view allowance() -> uint256`
 
-Returns current allowance of Reward contract
+Returns current allowance of Reward contract.
 
 ##### `seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):`
 
 Wrapper for `seedAllocations` of Merkle contract. 
-Could be called from allocator EOA only
+Can be called by allocator EOA only.
 
-Reverts if `_amount` is bigger then Manager balance or allowance
+Reverts if `_amount` is greater than Manager balance or allowance.
 
 Events:
 
