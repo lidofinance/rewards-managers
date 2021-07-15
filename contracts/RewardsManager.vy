@@ -1,9 +1,13 @@
 # @version 0.2.12
-# @notice A manager contract for the StakingRewards contract.
-# @author skozin
+# @notice A manager contract for the Merkle contract.
 # @license MIT
-from vyper.interfaces import ERC20
 
+
+interface ERC20:
+    def allowance(arg0: address, arg1: address) -> uint256: view
+    def balanceOf(arg0: address) -> uint256: view
+    def approve(_spender: address, _value: uint256) -> bool: nonpayable
+    def transfer(_to: address, _value: uint256) -> bool: nonpayable
 
 event OwnerChanged:
     new_owner: address
@@ -35,6 +39,10 @@ event Unpaused:
     actor: address
 
 
+event AllowanceChanged:
+    new_allowance: uint256
+
+
 interface IRewardsContract:
     def seedAllocations(_week: uint256, _merkleRoot: bytes32, _totalAllocation: uint256): nonpayable
 
@@ -49,21 +57,22 @@ rewards_limit_per_period: public(uint256)
 rewards_period_duration: constant(uint256) = 604800  # 3600 * 24 * 7
 last_allowance_period_date: public(uint256)
 
+is_paused: public(bool)
+
 
 @external
 def __init__(
     _owner: address,
     _allocator: address,
     _rewards_token: address,
-    _rewards_contract: address,
-    _rewards_limit_per_period: uint256
+    _rewards_contract: address
 ):
     self.owner = _owner
     self.allocator = _allocator
-    self.rewards_limit_per_period = _rewards_limit_per_period
     self.rewards_token = _rewards_token
     self.rewards_contract = _rewards_contract
 
+    self.rewards_limit_per_period = 25000 * 10**18
     self.last_allowance_period_date = block.timestamp
 
     log OwnerChanged(self.owner)
@@ -94,6 +103,8 @@ def change_allocator(_new_allocator: address):
 @internal
 def _allowance() -> uint256:
     current_allowance: uint256 = ERC20(self.rewards_token).allowance(self, self.rewards_contract)
+    if self.is_paused == True:
+        return current_allowance
     scheduled_periods: uint256 = (block.timestamp - self.last_allowance_period_date) / rewards_period_duration
     return current_allowance + scheduled_periods * self.rewards_limit_per_period
 
@@ -107,44 +118,66 @@ def allowance() -> uint256:
     return self._allowance()
 
 
-@view
-@internal
-def _is_rewards_period_finished() -> bool:
-    avalable_balance: uint256 = ERC20(self.rewards_token).balanceOf(self) - self._allowance()
+# @view
+# @internal
+# def _is_rewards_period_finished() -> bool:
+#     avalable_balance: uint256 = ERC20(self.rewards_token).balanceOf(self) - self._allowance()
     
-    return block.timestamp >= self.last_allowance_period_date + rewards_period_duration * (avalable_balance / self.rewards_limit_per_period)
+#     return block.timestamp >= self.last_allowance_period_date + rewards_period_duration * (avalable_balance / self.rewards_limit_per_period)
 
 
-@view
-@external
-def is_rewards_period_finished() -> bool:
-    """
-    @notice Whether the current rewards period has finished.
-    """
-    return self._is_rewards_period_finished()
+# @view
+# @external
+# def is_rewards_period_finished() -> bool:
+#     """
+#     @notice Whether the current rewards period has finished.
+#     """
+#     return self._is_rewards_period_finished()
 
 
 @internal
-def _updateAlowance():
+def _update_last_allowance_period_date():
+    periods: uint256 = ( block.timestamp - self.last_allowance_period_date ) / rewards_period_duration
+    self.last_allowance_period_date = self.last_allowance_period_date + rewards_period_duration * periods
+
+
+@internal
+def _update_alowance():
     """
     @notice Updates allowance based on 
     """
-    ERC20(self.rewards_token).approve(self.rewards_contract, self._allowance())
-    self.last_allowance_period_date = self.last_allowance_period_date + rewards_period_duration
+    new_allowance: uint256 = self._allowance()
+    ERC20(self.rewards_token).approve(self.rewards_contract, 0)
+    ERC20(self.rewards_token).approve(self.rewards_contract, new_allowance)
+    self._update_last_allowance_period_date()
 
 
 @external
-def seedAllocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
+def change_allowance(_new_allowance: uint256):
+    """
+    @notice Changes the allowance of rewar contract. Can only be callded by owner.
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+    self._update_last_allowance_period_date()
+    ERC20(self.rewards_token).approve(self.rewards_contract, 0)
+    ERC20(self.rewards_token).approve(self.rewards_contract, _new_allowance)
+    
+    log AllowanceChanged(_new_allowance)
+
+
+@external
+def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     """
     @notice
         Allocates ldo for merkle reward contract with seed root and week number
         Can only be called by the allocator
     """
     assert msg.sender == self.allocator, "manager: not permitted"
+    assert self.is_paused == False, "manager: contract is paused"
 
     rewards_token: address = self.rewards_token
 
-    self._updateAlowance()
+    self._update_alowance()
 
     assert ERC20(rewards_token).balanceOf(self) >= _amount, "manager: reward token balance is low"
     assert ERC20(rewards_token).allowance(self, self.rewards_contract) >= _amount, "manager: not enought amount approved"   
@@ -160,7 +193,7 @@ def change_rewards_limit(_new_limit: uint256):
     @notice Changes the rewards limit. Can only be called by the current owner.
     """
     assert msg.sender == self.owner, "manager: not permitted"
-    self._updateAlowance()
+    self._update_alowance()
     self.rewards_limit_per_period = _new_limit
     log RewardsLimitChanged(self.rewards_limit_per_period)
 
@@ -176,5 +209,30 @@ def recover_erc20(_token: address, _recipient: address = msg.sender):
     token_balance: uint256 = ERC20(_token).balanceOf(self)
     if token_balance != 0:
         assert ERC20(_token).transfer(_recipient, token_balance), "manager: token transfer failed"
+        log ERC20TokenRecovered(_token, token_balance, _recipient)
 
-    log ERC20TokenRecovered(_token, token_balance, _recipient)
+
+@external
+def pause():
+    """
+    @notice
+        Pause allowance increasing and rejects seedAllocations calling
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+    self._update_alowance()
+    self.is_paused = True
+
+    log Paused(msg.sender)
+
+
+@external
+def unpause():
+    """
+    @notice
+        Pause allowance increasing and rejects seedAllocations calling
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+    self._update_last_allowance_period_date()
+    self.is_paused = False
+
+    log Unpaused(msg.sender)
