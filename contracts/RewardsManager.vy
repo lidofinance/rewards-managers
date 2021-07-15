@@ -9,6 +9,11 @@ interface ERC20:
     def approve(_spender: address, _value: uint256) -> bool: nonpayable
     def transfer(_to: address, _value: uint256) -> bool: nonpayable
 
+
+interface IRewardsContract:
+    def seedAllocations(_week: uint256, _merkleRoot: bytes32, _totalAllocation: uint256): nonpayable
+
+
 event OwnerChanged:
     new_owner: address
 
@@ -41,10 +46,6 @@ event Unpaused:
 
 event AllowanceChanged:
     new_allowance: uint256
-
-
-interface IRewardsContract:
-    def seedAllocations(_week: uint256, _merkleRoot: bytes32, _totalAllocation: uint256): nonpayable
 
 
 owner: public(address)
@@ -116,23 +117,6 @@ def allowance() -> uint256:
     @notice Returns current allowance for Rewards contract
     """
     return self._allowance()
-
-
-# @view
-# @internal
-# def _is_rewards_period_finished() -> bool:
-#     avalable_balance: uint256 = ERC20(self.rewards_token).balanceOf(self) - self._allowance()
-    
-#     return block.timestamp >= self.last_allowance_period_date + rewards_period_duration * (avalable_balance / self.rewards_limit_per_period)
-
-
-# @view
-# @external
-# def is_rewards_period_finished() -> bool:
-#     """
-#     @notice Whether the current rewards period has finished.
-#     """
-#     return self._is_rewards_period_finished()
 
 
 @internal
