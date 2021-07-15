@@ -1,13 +1,11 @@
 import pytest
-from brownie import Wei, ZERO_ADDRESS
-from scripts.deploy import deploy_manager_and_rewards
+from brownie import MerkleMock, chain, accounts
+from scripts.deploy import deploy_manager
+
+
 from utils.config import (
-    lp_token_address,
     ldo_token_address,
-    lido_dao_agent_address,
-    lido_dao_finance_address,
-    lido_dao_voting_address,
-    lido_dao_token_manager_address
+    lido_dao_agent_address
 )
 
 
@@ -32,101 +30,28 @@ def stranger(accounts):
 
 
 @pytest.fixture(scope='module')
-def dao_voting_impersonated(accounts):
-    return accounts.at("0x2e59A20f205bB85a89C53f1936454680651E618e", force=True)
-
-
-@pytest.fixture(scope='module')
-def dao_voting(interface):
-    return interface.Voting(lido_dao_voting_address)
-
-
-@pytest.fixture(scope='module')
-def dao_token_manager(interface):
-    return interface.TokenManager(lido_dao_token_manager_address)
-
-
-@pytest.fixture(scope='module')
-def dao_finance(interface):
-    return interface.Finance(lido_dao_finance_address)
-
-
-@pytest.fixture(scope='module')
-def dao_holder(accounts):
-    return accounts.at('0x537dfB5f599A3d15C50E2d9270e46b808A52559D', force=True)
-
-
-@pytest.fixture(scope='module')
-def lido(interface):
-    return interface.Lido("0xae7ab96520de3a18e5e111b5eaab095312d7fe84")
-
-
-@pytest.fixture(scope='module')
-def steth_token(interface, lido):
-    return interface.ERC20(lido.address)
-
-
-# Lido DAO Agent app
-@pytest.fixture(scope='module')
-def dao_agent(interface):
-    return interface.Agent(lido_dao_agent_address)
-
-
-@pytest.fixture(scope='module')
-def steth_pool(interface):
-    return interface.StableSwapSTETH("0xDC24316b9AE028F1497c275EB9192a3Ea0f67022")
-
-
-@pytest.fixture(scope='module')
-def lp_token(interface):
-    return interface.ERC20(lp_token_address)
-
-
-@pytest.fixture(scope='module')
 def ldo_token(interface):
     return interface.ERC20(ldo_token_address)
 
 
 @pytest.fixture(scope='module')
-def gauge(interface):
-    return interface.LiquidityGaugeV2("0x182B723a58739a9c974cFDB385ceaDb237453c28")
+def ldo_agent(interface):
+    return interface.ERC20(lido_dao_agent_address)
 
 
 @pytest.fixture(scope='module')
-def gauge_admin(gauge, accounts):
-    return accounts.at(gauge.admin(), force=True)
-
-
-class RewardsHelpers:
-    @staticmethod
-    def deploy_rewards(rewards_period, deployer):
-        return deploy_manager_and_rewards(
-            rewards_duration=rewards_period,
-            tx_params={"from": deployer},
-            publish_source=False
-        )
-
-    @staticmethod
-    def install_rewards(gauge, gauge_admin, rewards_token, rewards):
-        sigs = [
-            rewards.stake.signature[2:],
-            rewards.withdraw.signature[2:],
-            rewards.getReward.signature[2:]
-        ]
-        gauge.set_rewards(
-            rewards, # _reward_contract
-            f"0x{sigs[0]}{sigs[1]}{sigs[2]}{'00' * 20}", # _sigs
-            [rewards_token] + [ZERO_ADDRESS] * 7, # _reward_tokens
-            {"from": gauge_admin}
-        )
-        assert gauge.reward_contract() == rewards
-        assert gauge.reward_tokens(0) == rewards_token
-        assert gauge.reward_tokens(1) == ZERO_ADDRESS
+def merkle_contract(deployer, ldo_token):
+    return MerkleMock.deploy(ldo_token, {"from": deployer})
 
 
 @pytest.fixture(scope='module')
-def rewards_helpers():
-    return RewardsHelpers
+def dao_treasury(deployer, ldo_token):
+    return accounts.at('0x3e40d73eb977dc6a537af587d48316fee66e9c8c', force = True)
+
+
+@pytest.fixture(scope='module')
+def rewards_manager(deployer, merkle_contract, balancer_allocator, ldo_agent):
+    return deploy_manager(ldo_agent, balancer_allocator, merkle_contract, {"from": deployer})
 
 
 class Helpers:
@@ -140,6 +65,32 @@ class Helpers:
       assert len(receiver_events) == 1
       assert dict(receiver_events[0]) == evt_keys_dict
 
+    @staticmethod
+    def execute_vote(accounts, vote_id, dao_voting):
+        ldo_holders = [
+            '0x3e40d73eb977dc6a537af587d48316fee66e9c8c',
+            '0xb8d83908aab38a159f3da47a59d84db8e1838712',
+            '0xa2dfc431297aee387c05beef507e5335e684fbcd'
+        ]
+
+        for holder_addr in ldo_holders:
+            print('voting from acct:', holder_addr)
+            accounts[0].transfer(holder_addr, '0.1 ether')
+            account = accounts.at(holder_addr, force=True)
+            dao_voting.vote(vote_id, True, False, {'from': account})
+
+        # wait for the vote to end
+        chain.sleep(3 * 60 * 60 * 24)
+        chain.mine()
+
+        assert dao_voting.canExecute(vote_id)
+        dao_voting.executeVote(vote_id, {'from': accounts[0]})
+
+        print(f'vote executed')
+
+    @staticmethod
+    def assert_no_events_named(evt_name, tx):
+        assert evt_name not in tx.events
 
 @pytest.fixture(scope='module')
 def helpers():
