@@ -3,7 +3,6 @@ import sys
 from brownie import RewardsManager
 
 from utils.config import (
-    lido_dao_agent_address,
     ldo_token_address,
     get_is_live,
     get_deployer_account,
@@ -34,7 +33,7 @@ def main():
     print('Allocator:', allocator)
     print('Merkle contract', merkle_contract)
     print('LDO token address:', ldo_token_address)
-    print('Owner:', lido_dao_agent_address)
+    print('Owner:', owner)
 
     sys.stdout.write('Proceed? [y/n]: ')
 

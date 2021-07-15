@@ -1,11 +1,22 @@
 # Balancer rewards manager
 
-This repository contains Manager contract for Balancer Merkle Rewards contract [...]
-It allows to limitate allowance of rewards token for distributing it with Balancer Merkle Rewards contract
+This repository contains Manager contract for Balancer Merkle Rewards contract.
+It allows to limitate allowance of rewards token for distributing it with Balancer Merkle contract.
 
 # Rewards Manager
 
-This contract should be provided as owner for Balancer Merkle Rewards contract
+This contract should be provided as owner for Balancer Merkle contract
+
+## Deploying Environment
+
+`DEPLOYER` deployer account
+
+`ALLOCATOR` balancer allocator account
+
+`MERKLE_CONTRACT` address of Merkle contract
+
+`OWNER` address of manager owner
+
 
 ## Levers
 
@@ -83,7 +94,7 @@ event ERC20TokenRecovered:
 
 Returns current allowance of Reward contract
 
-##### `seedAllocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):`
+##### `seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):`
 
 Wrapper for `seedAllocations` of Merkle contract. 
 Could be called from allocator EOA only
