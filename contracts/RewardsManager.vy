@@ -1,5 +1,7 @@
 # @version 0.2.12
+# @author https://github.com/bulbozaur
 # @notice A manager contract for the Merkle contract.
+
 # @license MIT
 
 
@@ -112,7 +114,10 @@ def _allowance() -> uint256:
 @external
 def allowance() -> uint256:
     """
-    @notice Returns current allowance for Rewards contract
+    @notice 
+        Returns current allowance for Rewards contract as sum of
+        merkle contract allowance and allowance for period since
+        last allowance update
     """
     return self._allowance()
 
@@ -124,9 +129,9 @@ def _update_last_allowance_period_date():
 
 
 @internal
-def _update_alowance():
+def _update_allowance():
     """
-    @notice Updates allowance based on 
+    @notice Updates allowance based on current callulated value
     """
     new_allowance: uint256 = self._allowance()
     ERC20(rewards_token).approve(self.rewards_contract, 0)
@@ -157,7 +162,7 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     assert msg.sender == self.allocator, "manager: not permitted"
     assert self.is_paused == False, "manager: contract is paused"
 
-    self._update_alowance()
+    self._update_allowance()
 
     assert ERC20(rewards_token).balanceOf(self) >= _amount, "manager: reward token balance is low"
     assert ERC20(rewards_token).allowance(self, self.rewards_contract) >= _amount, "manager: not enought amount approved"   
@@ -173,7 +178,7 @@ def change_rewards_limit(_new_limit: uint256):
     @notice Changes the rewards limit. Can only be called by the current owner.
     """
     assert msg.sender == self.owner, "manager: not permitted"
-    self._update_alowance()
+    self._update_allowance()
     self.rewards_limit_per_period = _new_limit
     log RewardsLimitChanged(self.rewards_limit_per_period)
 
@@ -191,6 +196,8 @@ def recover_erc20(_token: address, _recipient: address = msg.sender):
         assert ERC20(_token).transfer(_recipient, token_balance), "manager: token transfer failed"
         log ERC20TokenRecovered(_token, token_balance, _recipient)
 
+    if self.balance != 0:
+
 
 @external
 def pause():
@@ -199,7 +206,7 @@ def pause():
         Pause allowance increasing and rejects seedAllocations calling
     """
     assert msg.sender == self.owner, "manager: not permitted"
-    self._update_alowance()
+    self._update_allowance()
     self.is_paused = True
 
     log Paused(msg.sender)
@@ -209,7 +216,7 @@ def pause():
 def unpause():
     """
     @notice
-        Pause allowance increasing and rejects seedAllocations calling
+        Unpause allowance increasing and allows seedAllocations calling
     """
     assert msg.sender == self.owner, "manager: not permitted"
     self._update_last_allowance_period_date()
