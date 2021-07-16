@@ -217,6 +217,23 @@ def unpause():
 
 
 @external
+@view
+def out_of_funding_date() -> uint256:
+    """
+    @notice Date of end of reward programs out of funding
+    """
+    rewards_balance: uint256 = ERC20(rewards_token).balanceOf(self)
+    accounted_allocations_limit: uint256 = ERC20(rewards_token).allowance(self, self.rewards_contract)
+
+    if (rewards_balance < accounted_allocations_limit):
+        unaccounted_periods: uint256 = (accounted_allocations_limit - rewards_balance) / self.rewards_limit_per_period
+        return self.last_accounted_period_date - unaccounted_periods * rewards_period_duration
+    
+    unaccounted_periods: uint256 = (rewards_balance - accounted_allocations_limit) / self.rewards_limit_per_period
+    return self.last_accounted_period_date + unaccounted_periods * rewards_period_duration
+    
+
+@external
 def transfer_ownership(_to: address):
     """
     @notice Changes the contract owner. Can only be called by the current owner.
