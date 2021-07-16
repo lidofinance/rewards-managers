@@ -145,6 +145,37 @@ def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator
     rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
 
 
+def test_change_allowance_any_address(
+    rewards_manager, 
+    ldo_agent, 
+    ldo_token, 
+    stranger, 
+    helpers
+):
+
+    chain = Chain()
+    assert ldo_token.allowance(rewards_manager, stranger) == 0
+
+    with reverts():
+        rewards_manager.change_allowance(
+            stranger, 
+            10, 
+            {"from": stranger}
+        )
+
+    tx = rewards_manager.change_allowance(
+        stranger, 
+        10,
+        {"from": ldo_agent}
+    )
+    helpers.assert_single_event_named(
+        "AllowanceChanged", 
+        tx, 
+        {"spender": stranger, "new_allowance": 10}
+    )
+    assert ldo_token.allowance(rewards_manager, stranger) == 10
+
+
 def test_change_allowance(rewards_manager, ldo_agent, stranger, helpers):
 
     chain = Chain()

@@ -150,8 +150,8 @@ def change_allowance( _spender: address, _new_allowance: uint256):
     assert msg.sender == self.owner, "manager: not permitted"
     if _spender == self.rewards_contract:
         self._update_last_allowance_period_date()
-    ERC20(rewards_token).approve(self.rewards_contract, 0)
-    ERC20(rewards_token).approve(self.rewards_contract, _new_allowance)
+    ERC20(rewards_token).approve(_spender, 0)
+    ERC20(rewards_token).approve(_spender, _new_allowance)
     
     log AllowanceChanged(_spender, _new_allowance)
 
