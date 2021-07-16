@@ -35,62 +35,64 @@ def test_change_allocator(rewards_manager, ldo_agent, balancer_allocator, strang
 
     helpers.assert_single_event_named("AllocatorChanged", tx, {"new_allocator": stranger})
 
+
 @pytest.mark.parametrize(
     'period', 
     [
         rewards_period, 
+        rewards_period - 10, 
+        rewards_period + 1, 
         floor(0.5*rewards_period), 
         floor(0.9*rewards_period), 
-        floor(1.1*rewards_period), 
         floor(2.5*rewards_period)
     ]
 )
-def test_allowance_basic_calculation(rewards_manager, period):
+def test_allocations_limit_basic_calculation(rewards_manager, period):
     chain = Chain()
 
-    assert rewards_manager.allowance() == 0
+    assert rewards_manager.available_allocations_limit() == 0
     chain.sleep(period)
     chain.mine()
-    assert rewards_manager.allowance() == floor(period/rewards_period) * rewards_limit
+    assert rewards_manager.available_allocations_limit() == floor(period/rewards_period) * rewards_limit
     chain.sleep(period)
     chain.mine()
-    assert rewards_manager.allowance() == floor(2 * period/rewards_period) * rewards_limit
+    assert rewards_manager.available_allocations_limit() == floor(2 * period/rewards_period) * rewards_limit
     
 
-def test_allowance_paused_calculation(rewards_manager, ldo_agent):
-    assert rewards_manager.allowance() == 0
+def test_allocations_limit_paused_calculation(rewards_manager, ldo_agent):
+    assert rewards_manager.available_allocations_limit() == 0
     chain.sleep(floor(1.5 * rewards_period))
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
     rewards_manager.pause({"from": ldo_agent})
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
 
     rewards_manager.unpause({"from": ldo_agent})
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == 2 * rewards_limit
+    assert rewards_manager.available_allocations_limit() == 2 * rewards_limit
 
 
-def test_allowance_calculation_with_changed_rewards_limit(rewards_manager, ldo_agent):
-    assert rewards_manager.allowance() == 0
+def test_allocations_limit_calculation_with_changed_rewards_limit(rewards_manager, ldo_agent):
+    assert rewards_manager.available_allocations_limit() == 0
     chain.sleep(floor(1.5 * rewards_period))
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
 
     rewards_manager.change_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit + 2 * rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit + 2 * rewards_limit
 
     rewards_manager.change_rewards_limit(0.5 * rewards_limit, {"from": ldo_agent})
-    assert rewards_manager.allowance() == rewards_limit + 2 * rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit + 2 * rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit + 2 * rewards_limit + 0.5 * rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit + 2 * rewards_limit + 0.5 * rewards_limit
 
 
 def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
@@ -98,10 +100,10 @@ def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
 
     chain = Chain()
 
-    assert rewards_manager.allowance() == 0
+    assert rewards_manager.available_allocations_limit() == 0
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
 
     with reverts():
         rewards_manager.change_rewards_limit(2 * rewards_limit, {"from": stranger})
@@ -110,10 +112,10 @@ def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
     helpers.assert_single_event_named("RewardsLimitChanged", tx, {"new_limit": 2 * rewards_limit})
 
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == (1 + 2) * rewards_limit
+    assert rewards_manager.available_allocations_limit() == (1 + 2) * rewards_limit
 
 
 def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator):
@@ -130,7 +132,7 @@ def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator
     helpers.assert_single_event_named("Paused", tx, {"actor": ldo_agent})
     assert rewards_manager.is_paused() == True
 
-    assert rewards_manager.allowance() == 0
+    assert rewards_manager.available_allocations_limit() == 0
 
     with reverts():
         rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
@@ -145,7 +147,7 @@ def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator
     rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
 
 
-def test_change_allowance_any_address(
+def test_change_allocations_limit_any_address(
     rewards_manager, 
     ldo_agent, 
     ldo_token, 
@@ -157,52 +159,52 @@ def test_change_allowance_any_address(
     assert ldo_token.allowance(rewards_manager, stranger) == 0
 
     with reverts():
-        rewards_manager.change_allowance(
+        rewards_manager.change_allocations_limit(
             stranger, 
             10, 
             {"from": stranger}
         )
 
-    tx = rewards_manager.change_allowance(
+    tx = rewards_manager.change_allocations_limit(
         stranger, 
         10,
         {"from": ldo_agent}
     )
     helpers.assert_single_event_named(
-        "AllowanceChanged", 
+        "AllocationsLimitChanged", 
         tx, 
         {"spender": stranger, "new_allowance": 10}
     )
     assert ldo_token.allowance(rewards_manager, stranger) == 10
 
 
-def test_change_allowance(rewards_manager, ldo_agent, stranger, helpers):
+def test_change_allocations_limit(rewards_manager, ldo_agent, stranger, helpers):
 
     chain = Chain()
-    assert rewards_manager.allowance() == 0
+    assert rewards_manager.available_allocations_limit() == 0
 
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
 
     with reverts():
-        rewards_manager.change_allowance(
+        rewards_manager.change_allocations_limit(
             rewards_manager.rewards_contract(), 
             10, 
             {"from": stranger}
         )
 
-    tx = rewards_manager.change_allowance(
+    tx = rewards_manager.change_allocations_limit(
         rewards_manager.rewards_contract(), 
         10, 
         {"from": ldo_agent}
     )
     helpers.assert_single_event_named(
-        "AllowanceChanged", 
+        "AllocationsLimitChanged", 
         tx, 
         {"spender": rewards_manager.rewards_contract(), "new_allowance": 10}
     )
-    assert rewards_manager.allowance() == 10
+    assert rewards_manager.available_allocations_limit() == 10
 
 
 def test_seed_allocations(
@@ -227,7 +229,7 @@ def test_seed_allocations(
 
     chain.sleep(rewards_period)
     chain.mine()
-    assert rewards_manager.allowance() == rewards_limit
+    assert rewards_manager.available_allocations_limit() == rewards_limit
 
     ldo_token.transfer(rewards_manager, 10000 * 10**18, {"from": dao_treasury})
     assert ldo_token.balanceOf(rewards_manager) == 10000 * 10**18
@@ -243,7 +245,7 @@ def test_seed_allocations(
 
     tx = rewards_manager.seed_allocations(0, '', rewards_limit, {"from": balancer_allocator})
     helpers.assert_single_event_named("Allocation", tx, {"amount": rewards_limit})
-    assert rewards_manager.allowance() == 0
+    assert rewards_manager.available_allocations_limit() == 0
     assert ldo_token.balanceOf(rewards_manager) == 5000 * 10**18
     assert ldo_token.balanceOf(rewards_manager.rewards_contract()) == rewards_limit
 
