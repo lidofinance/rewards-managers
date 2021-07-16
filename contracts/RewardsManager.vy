@@ -47,6 +47,7 @@ event Unpaused:
 
 
 event AllowanceChanged:
+    spender: address
     new_allowance: uint256
 
 
@@ -137,19 +138,22 @@ def _update_allowance():
     ERC20(rewards_token).approve(self.rewards_contract, 0)
     ERC20(rewards_token).approve(self.rewards_contract, new_allowance)
     self._update_last_allowance_period_date()
+    
+    log AllowanceChanged(self.rewards_contract, new_allowance)
 
 
 @external
-def change_allowance(_new_allowance: uint256):
+def change_allowance( _spender: address, _new_allowance: uint256):
     """
-    @notice Changes the allowance of rewar contract. Can only be callded by owner.
+    @notice Changes the allowance of reward contract. Can only be callded by owner.
     """
     assert msg.sender == self.owner, "manager: not permitted"
-    self._update_last_allowance_period_date()
+    if _spender == self.rewards_contract:
+        self._update_last_allowance_period_date()
     ERC20(rewards_token).approve(self.rewards_contract, 0)
     ERC20(rewards_token).approve(self.rewards_contract, _new_allowance)
     
-    log AllowanceChanged(_new_allowance)
+    log AllowanceChanged(_spender, _new_allowance)
 
 
 @external
