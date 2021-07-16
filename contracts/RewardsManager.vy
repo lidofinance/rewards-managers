@@ -52,7 +52,7 @@ owner: public(address)
 allocator: public(address)
 
 rewards_contract: public(address)
-rewards_token: public(address)
+rewards_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 
 rewards_limit_per_period: public(uint256)
 rewards_period_duration: constant(uint256) = 604800  # 3600 * 24 * 7
@@ -65,12 +65,10 @@ is_paused: public(bool)
 def __init__(
     _owner: address,
     _allocator: address,
-    _rewards_token: address,
     _rewards_contract: address
 ):
     self.owner = _owner
     self.allocator = _allocator
-    self.rewards_token = _rewards_token
     self.rewards_contract = _rewards_contract
 
     self.rewards_limit_per_period = 25000 * 10**18
@@ -103,7 +101,7 @@ def change_allocator(_new_allocator: address):
 @view
 @internal
 def _allowance() -> uint256:
-    current_allowance: uint256 = ERC20(self.rewards_token).allowance(self, self.rewards_contract)
+    current_allowance: uint256 = ERC20(rewards_token).allowance(self, self.rewards_contract)
     if self.is_paused == True:
         return current_allowance
     scheduled_periods: uint256 = (block.timestamp - self.last_allowance_period_date) / rewards_period_duration
@@ -131,8 +129,8 @@ def _update_alowance():
     @notice Updates allowance based on 
     """
     new_allowance: uint256 = self._allowance()
-    ERC20(self.rewards_token).approve(self.rewards_contract, 0)
-    ERC20(self.rewards_token).approve(self.rewards_contract, new_allowance)
+    ERC20(rewards_token).approve(self.rewards_contract, 0)
+    ERC20(rewards_token).approve(self.rewards_contract, new_allowance)
     self._update_last_allowance_period_date()
 
 
@@ -143,8 +141,8 @@ def change_allowance(_new_allowance: uint256):
     """
     assert msg.sender == self.owner, "manager: not permitted"
     self._update_last_allowance_period_date()
-    ERC20(self.rewards_token).approve(self.rewards_contract, 0)
-    ERC20(self.rewards_token).approve(self.rewards_contract, _new_allowance)
+    ERC20(rewards_token).approve(self.rewards_contract, 0)
+    ERC20(rewards_token).approve(self.rewards_contract, _new_allowance)
     
     log AllowanceChanged(_new_allowance)
 
@@ -158,8 +156,6 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     """
     assert msg.sender == self.allocator, "manager: not permitted"
     assert self.is_paused == False, "manager: contract is paused"
-
-    rewards_token: address = self.rewards_token
 
     self._update_alowance()
 

@@ -16,7 +16,6 @@ def deploy_manager(owner, allocator, merkle_contract, tx_params):
     return RewardsManager.deploy(
         owner, # _owner
         allocator, # _allocator
-        ldo_token_address, # _rewards_token
         merkle_contract, # _rewards_contract
         tx_params,
         publish_source=False,
