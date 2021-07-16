@@ -188,19 +188,19 @@ def change_rewards_limit(_new_limit: uint256):
 
 
 @external
-def recover_erc20(_token: address, _recipient: address = msg.sender):
+def recover_erc20(_token: address):
     """
     @notice
         Transfers the whole balance of the given ERC20 token from self
-        to the recipient. Can only be called by the owner.
+        to the owner. Can only be called by the owner.
     """
-    assert msg.sender == self.owner, "manager: not permitted"
+    owner: address = self.owner
+    assert msg.sender == owner, "manager: not permitted"
     token_balance: uint256 = ERC20(_token).balanceOf(self)
     if token_balance != 0:
-        assert ERC20(_token).transfer(_recipient, token_balance), "manager: token transfer failed"
-        log ERC20TokenRecovered(_token, token_balance, _recipient)
+        assert ERC20(_token).transfer(owner, token_balance), "manager: token transfer failed"
+        log ERC20TokenRecovered(_token, token_balance, owner)
 
-    if self.balance != 0:
 
 
 @external
