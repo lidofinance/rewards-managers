@@ -13,10 +13,27 @@ The reward manager contract should be set as `owner` of the Balancer Merkle cont
 
 `ALLOCATOR` balancer allocator account
 
-`MERKLE_CONTRACT` address of Merkle contract
-
 `OWNER` address of manager owner
 
+## Balancer side
+
+##### `view available_allocations() -> uint256`
+
+Returns current allowance of Reward contract.
+
+##### `seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):`
+
+Wrapper for `seedAllocations` of Merkle contract. 
+Can be called by allocator EOA only.
+
+Reverts if `_amount` is greater than Manager balance or allocations limit.
+
+Events:
+
+```vyper=
+event RewardsLimitChanged:
+    new_limit: uint256
+```
 
 ## Levers
 
@@ -45,6 +62,7 @@ event AllocatorChanged:
 ##### `change_rewards_limit(_new_limit: uint256)`
 
 Changes reward token limit per period `rewards_period_duration`. Can be called by owner only. 
+Updates current allocations limit and set rewards limit for next periods.
 
 Events:
 ```vyper=
@@ -52,11 +70,21 @@ event RewardsLimitChanged:
     new_limit: uint256
 ```
 
-Updates current allowance and set rewards limit for next periods.
+##### `change_allocations_limit(_new_allocations_limit: uint256)`
+
+Sets new allocations limit for Reward contract.
+
+Events:
+```vyper=
+event AllocationsLimitChanged:
+    new_limit: uint256
+```
+
+
 
 ##### `pause()`
 
-Stops updating allowance and rejects `seedAllowance` calls. Can be called by owner only.
+Stops updating allocations limit and rejects `seed_allocations` calls. Can be called by owner only.
 
 Events:
 ```vyper=
@@ -66,7 +94,7 @@ event Paused:
 
 ##### `unpause()`
 
-Resumes updating allowance and allows `seedAllowance` calls. Can be called by owner only.
+Resumes updating allocations limit and allows `seed_allocations` calls. Can be called by owner only.
 
 Events:
 ```vyper=
@@ -78,32 +106,10 @@ event Unpaused:
 
 Transfers the whole balance of the given ERC20 token to the recipient. Can be called by owner only.
 
-
 Events:
 ```vyper=
 event ERC20TokenRecovered:
     token: address
     amount: uint256
     recipient: address
-```
-
-
-# Balancer side
-
-##### `view allowance() -> uint256`
-
-Returns current allowance of Reward contract.
-
-##### `seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):`
-
-Wrapper for `seedAllocations` of Merkle contract. 
-Can be called by allocator EOA only.
-
-Reverts if `_amount` is greater than Manager balance or allowance.
-
-Events:
-
-```vyper=
-event RewardsLimitChanged:
-    new_limit: uint256
 ```
