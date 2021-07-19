@@ -45,7 +45,7 @@ def test_out_of_funding_date_with_limit_change(
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.out_of_funding_date() == out_of_funding_date
-    assert rewards_manager.available_allocations_limit() == rewards_limit
+    assert rewards_manager.available_allocations() == rewards_limit
  
     out_of_funding_date = rewards_manager.tx.timestamp + 2 * rewards_period
 
@@ -70,7 +70,7 @@ def test_out_of_funding_date_with_limit_change(
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.out_of_funding_date() == out_of_funding_date
-    assert rewards_manager.available_allocations_limit() == rewards_limit
+    assert rewards_manager.available_allocations() == rewards_limit
  
     out_of_funding_date = rewards_manager.tx.timestamp + 2 * rewards_period
 
