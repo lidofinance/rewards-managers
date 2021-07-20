@@ -225,11 +225,12 @@ def out_of_funding_date() -> uint256:
     """
     @notice 
         Expected date of the manager to run out of funds at the current rate. 
-        All the allocate funds would be allowed for spending by Merkle Reward contract.
+        All the allocated funds would be allowed for spending by Merkle Reward contract.
     """
     rewards_balance: uint256 = ERC20(rewards_token).balanceOf(self)
     accounted_allocations_limit: uint256 = self.allocations_limit
 
+    # Handling accounted_allocations_limit and rewards_balance diff underflow exception
     if (rewards_balance < accounted_allocations_limit):
         unaccounted_periods: uint256 = (accounted_allocations_limit - rewards_balance) / self.rewards_limit_per_period
         return self.last_accounted_period_date - unaccounted_periods * rewards_period_duration
