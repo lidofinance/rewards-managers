@@ -1,6 +1,5 @@
 import pytest
 from brownie import reverts, chain
-from brownie.network.state import Chain
 from math import floor
 
 rewards_limit = 25 * 1000 * 10**18
@@ -48,8 +47,6 @@ def test_change_allocator(rewards_manager, ldo_agent, balancer_allocator, strang
     ]
 )
 def test_allocations_limit_basic_calculation(rewards_manager, period):
-    chain = Chain()
-
     assert rewards_manager.available_allocations() == 0
     chain.sleep(period)
     chain.mine()
@@ -98,8 +95,6 @@ def test_allocations_limit_calculation_with_changed_rewards_limit(rewards_manage
 def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.rewards_limit_per_period() == rewards_limit
 
-    chain = Chain()
-
     assert rewards_manager.available_allocations() == 0
     chain.sleep(rewards_period)
     chain.mine()
@@ -118,10 +113,32 @@ def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.available_allocations() == (1 + 2) * rewards_limit
 
 
+def test_change_rewards_limit_when_paused(rewards_manager, ldo_agent, stranger, helpers):
+    assert rewards_manager.rewards_limit_per_period() == rewards_limit
+
+    assert rewards_manager.available_allocations() == 0
+    chain.sleep(rewards_period)
+    chain.mine()
+    assert rewards_manager.available_allocations() == rewards_limit
+
+    rewards_manager.pause({"from": ldo_agent})
+
+    chain.sleep(2 * rewards_period)
+    chain.mine()
+
+    rewards_manager.change_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
+    assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
+
+    rewards_manager.unpause({"from": ldo_agent})
+
+    assert rewards_manager.available_allocations() == rewards_limit
+    chain.sleep(rewards_period)
+    chain.mine()
+    assert rewards_manager.available_allocations() == (1 + 2) * rewards_limit
+
+
 def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator):
     assert rewards_manager.is_paused() == False
-
-    chain = Chain()
 
     rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
 
@@ -148,8 +165,6 @@ def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator
 
 
 def test_change_allocations_limit(rewards_manager, ldo_agent, stranger, helpers):
-
-    chain = Chain()
     assert rewards_manager.available_allocations() == 0
 
     chain.sleep(rewards_period)
@@ -177,8 +192,6 @@ def test_seed_allocations(
     dao_treasury,
     balancer_allocator
 ):
-    chain = Chain()
-
     with reverts():
         rewards_manager.seed_allocations(0, '', 0, {"from": stranger})
 
@@ -234,8 +247,7 @@ def test_recover_erc20_empty_balance(
     ldo_agent, 
     ldo_token, 
     stranger, 
-    helpers, 
-    dao_treasury
+    helpers
 ):
     assert ldo_token.balanceOf(rewards_manager) == 0
 
