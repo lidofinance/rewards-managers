@@ -53,7 +53,7 @@ event AllocationsLimitChanged:
 owner: public(address)
 allocator: public(address)
 
-# will be replaced by const when reward contract will be deployer
+# will be replaced by const when reward contract will be deployed
 rewards_contract: public(address)
 rewards_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 
@@ -91,13 +91,11 @@ def _periods_since_last_update(_end_date: uint256) -> uint256:
 @internal
 @view
 def _available_allocations() -> uint256:
-    allocations_limit: uint256 = self.allocations_limit
-    
     if self.is_paused == True:
-        return allocations_limit
+        return self.allocations_limit
 
     unaccounted_periods: uint256 = self._periods_since_last_update(block.timestamp)
-    return allocations_limit + unaccounted_periods * self.rewards_limit_per_period
+    return self.allocations_limit + unaccounted_periods * self.rewards_limit_per_period
 
 
 @external
@@ -145,7 +143,7 @@ def _update_allocations_limit():
 @external
 def change_allocations_limit(_new_allocations_limit: uint256):
     """
-    @notice Changes the allocations limit for Merlke Rewadrds contact. Can only be called by owner.
+    @notice Changes the allocations limit for Merkle Rewadrds contact. Can only be called by owner.
     """
     assert msg.sender == self.owner, "manager: not permitted"
     self._change_allocations_limit(_new_allocations_limit)
@@ -156,7 +154,7 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     """
     @notice
         Wraps seedAllocations(_week: uint256, _merkle_root: bytes32, _amount: uint256)
-        of Merkele rewards contract with amount limited by available_allocations()
+        of Merkle rewards contract with amount limited by available_allocations()
     """
     assert msg.sender == self.allocator, "manager: not permitted"
     assert self.is_paused == False, "manager: contract is paused"
@@ -225,7 +223,9 @@ def unpause():
 @view
 def out_of_funding_date() -> uint256:
     """
-    @notice Date of end of reward programs out of funding
+    @notice 
+        Expected date of the manager to run out of funds at the current rate. 
+        All the allocate funds would be allowed for spending by Merkle Reward contract.
     """
     rewards_balance: uint256 = ERC20(rewards_token).balanceOf(self)
     accounted_allocations_limit: uint256 = self.allocations_limit
