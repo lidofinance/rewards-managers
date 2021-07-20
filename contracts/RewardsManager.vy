@@ -259,7 +259,7 @@ def change_allocator(_new_allocator: address):
 
 
 @external
-def recover_erc20(_token: address):
+def recover_erc20(_token: address, _amount: uint256):
     """
     @notice
         Transfers the whole balance of the given ERC20 token from self
@@ -268,7 +268,6 @@ def recover_erc20(_token: address):
     owner: address = self.owner
     assert msg.sender == owner, "manager: not permitted"
 
-    token_balance: uint256 = ERC20(_token).balanceOf(self)
-    if token_balance != 0:
-        assert ERC20(_token).transfer(owner, token_balance), "manager: token transfer failed"
-        log ERC20TokenRecovered(_token, token_balance, owner)
+    if ERC20(_token).balanceOf(self) >= _amount:
+        assert ERC20(_token).transfer(owner, _amount), "manager: token transfer failed"
+        log ERC20TokenRecovered(_token, _amount, owner)

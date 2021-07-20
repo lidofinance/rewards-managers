@@ -229,11 +229,11 @@ def test_recover_erc20(rewards_manager, ldo_agent, ldo_token, stranger, helpers,
     assert ldo_token.balanceOf(rewards_manager) == 100
 
     with reverts('manager: not permitted'):
-        rewards_manager.recover_erc20(ldo_token, {"from": stranger})
+        rewards_manager.recover_erc20(ldo_token, 100, {"from": stranger})
 
     balance = ldo_token.balanceOf(ldo_agent)
 
-    tx = rewards_manager.recover_erc20(ldo_token, {"from": ldo_agent})
+    tx = rewards_manager.recover_erc20(ldo_token, 100, {"from": ldo_agent})
     assert ldo_token.balanceOf(rewards_manager) == 0
     assert ldo_token.balanceOf(ldo_agent) == balance + 100
     helpers.assert_single_event_named(
@@ -252,9 +252,9 @@ def test_recover_erc20_empty_balance(
     assert ldo_token.balanceOf(rewards_manager) == 0
 
     with reverts('manager: not permitted'):
-        rewards_manager.recover_erc20(ldo_token, {"from": stranger})
+        rewards_manager.recover_erc20(ldo_token, 100, {"from": stranger})
 
     balance = ldo_token.balanceOf(ldo_agent)
-    tx = rewards_manager.recover_erc20(ldo_token, {"from": ldo_agent})
+    tx = rewards_manager.recover_erc20(ldo_token, 100, {"from": ldo_agent})
     assert ldo_token.balanceOf(ldo_agent) == balance
     helpers.assert_no_events_named("ERC20TokenRecovered", tx)
