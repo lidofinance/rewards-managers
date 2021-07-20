@@ -123,6 +123,9 @@ def _update_last_accounted_period_date():
 
 @internal
 def _change_allocations_limit(_new_allocations_limit: uint256):
+    """
+    @notice Changes the allocations limit for Merkle Rewadrds contact. 
+    """
     self.allocations_limit = _new_allocations_limit
 
     # Reseting unaccounted allocations allowance
@@ -134,7 +137,7 @@ def _change_allocations_limit(_new_allocations_limit: uint256):
 @internal
 def _update_allocations_limit():
     """
-    @notice Updates allowance based on current calculated allocatins limit
+    @notice Updates allowance based on current calculated allocations limit
     """
     new_allocations_limit: uint256 = self._available_allocations()
     self._change_allocations_limit(new_allocations_limit)
