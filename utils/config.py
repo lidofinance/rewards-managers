@@ -22,9 +22,14 @@ def get_env(name, is_required=True, message=None, default=None):
 
 def get_deployer_account(is_live):
     if is_live and 'DEPLOYER' not in os.environ:
-        raise EnvironmentError('Please set DEPLOYER env variable to the deployer account name')
+        raise EnvironmentError(
+            'Please set DEPLOYER env variable to the deployer account name')
 
-    return accounts.load(os.environ['DEPLOYER']) if is_live else accounts[0]
+    deployer = accounts.load(os.environ['DEPLOYER']) \
+        if is_live or 'DEPLOYER' in  os.environ \
+        else accounts[0]
+    
+    return deployer
 
 
 def prompt_bool():
