@@ -73,6 +73,9 @@ def __init__(
     self.owner = _owner
     self.allocator = _allocator
 
+    self.allocations_limit = 0
+    self.is_paused = False
+
     self.rewards_limit_per_period = 25000 * 10**18
     self.last_accounted_period_date = _start_date - rewards_period_duration
 
@@ -232,10 +235,14 @@ def out_of_funding_date() -> uint256:
 
     # Handling accounted_allocations_limit and rewards_balance diff underflow exception
     if (rewards_balance < accounted_allocations_limit):
-        unaccounted_periods: uint256 = 1 +(accounted_allocations_limit - rewards_balance) / self.rewards_limit_per_period
+        unaccounted_periods: uint256 = (accounted_allocations_limit - rewards_balance) / self.rewards_limit_per_period
+        # incrementing unaccounted periods count to get the end of last period instead of the begining
+        unaccounted_periods += 1
         return self.last_accounted_period_date - unaccounted_periods * rewards_period_duration
     
-    unaccounted_periods: uint256 = 1 +(rewards_balance - accounted_allocations_limit) / self.rewards_limit_per_period
+    unaccounted_periods: uint256 = (rewards_balance - accounted_allocations_limit) / self.rewards_limit_per_period
+    # incrementing unaccounted periods count to get the end of last period instead of the begining
+    unaccounted_periods += 1
     return self.last_accounted_period_date + unaccounted_periods * rewards_period_duration
     
 
