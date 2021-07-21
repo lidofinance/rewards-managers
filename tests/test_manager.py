@@ -39,7 +39,7 @@ def test_change_allocator(rewards_manager, ldo_agent, balancer_allocator, strang
     'period', 
     [
         rewards_period, 
-        rewards_period - 10, 
+        rewards_period - 1, 
         rewards_period + 1, 
         floor(0.5*rewards_period), 
         floor(0.9*rewards_period), 
@@ -47,8 +47,9 @@ def test_change_allocator(rewards_manager, ldo_agent, balancer_allocator, strang
     ]
 )
 def test_allocations_limit_basic_calculation(rewards_manager, period):
+    start_date = rewards_manager.last_accounted_period_date()
     assert rewards_manager.available_allocations() == 0
-    chain.sleep(period)
+    chain.sleep(start_date + period - chain.time())
     chain.mine()
     assert rewards_manager.available_allocations() == floor(period/rewards_period) * rewards_limit
     chain.sleep(period)
