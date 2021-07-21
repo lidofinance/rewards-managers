@@ -1,6 +1,6 @@
 # Balancer rewards manager
 
-This repository contains Lido reward manager contract for Balancer Merkle Rewards contract.
+This repository contains Lido reward manager contract for [Balancer Merkle Rewards contract](https://github.com/balancer-labs/balancer-v2-monorepo/blob/master/pkg/distributors/contracts/MerkleRedeem.sol).
 It periodically approves certain amount of LDO to be spendable by Balancer contract.
 
 # Rewards Manager
