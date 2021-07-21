@@ -15,6 +15,8 @@ The reward manager contract should be set as `owner` of the Balancer Merkle cont
 
 `OWNER` address of manager owner
 
+`START_DATE` timestamp of program start date
+
 ## Balancer side
 
 ##### `view available_allocations() -> uint256`
