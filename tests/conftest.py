@@ -47,7 +47,8 @@ def dao_treasury(deployer, ldo_token):
 
 @pytest.fixture(scope='module')
 def program_start_date():
-    return int(time.time() + 604800)
+    beging_of_the_day = int(time.time()/86400)*86400
+    return beging_of_the_day + 604800
 
 
 @pytest.fixture(scope='module')
