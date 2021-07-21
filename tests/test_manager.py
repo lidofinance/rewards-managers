@@ -4,12 +4,12 @@ from math import floor
 
 rewards_limit = 25 * 1000 * 10**18
 rewards_period = 3600 * 24 * 7
+MERKLE_CONTRACT = '0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809'
 
 
-def test_init(rewards_manager, ldo_agent, balancer_allocator, merkle_contract):
+def test_init(rewards_manager, ldo_agent, balancer_allocator):
     assert rewards_manager.owner() == ldo_agent
     assert rewards_manager.allocator() == balancer_allocator
-    assert rewards_manager.rewards_contract() == merkle_contract
     assert rewards_manager.rewards_limit_per_period() == rewards_limit
 
 
@@ -221,7 +221,7 @@ def test_seed_allocations(
     helpers.assert_single_event_named("Allocation", tx, {"amount": rewards_limit})
     assert rewards_manager.available_allocations() == 0
     assert ldo_token.balanceOf(rewards_manager) == 5000 * 10**18
-    assert ldo_token.balanceOf(rewards_manager.rewards_contract()) == rewards_limit
+    assert ldo_token.balanceOf(MERKLE_CONTRACT) == rewards_limit
 
 
 def test_recover_erc20(rewards_manager, ldo_agent, ldo_token, stranger, helpers, dao_treasury):

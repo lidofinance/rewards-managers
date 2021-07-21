@@ -40,18 +40,19 @@ def ldo_agent(interface):
 
 
 @pytest.fixture(scope='module')
-def merkle_contract(deployer, ldo_token):
-    return MerkleMock.deploy(ldo_token, {"from": deployer})
-
-
-@pytest.fixture(scope='module')
 def dao_treasury(deployer, ldo_token):
     return accounts.at('0x3e40d73eb977dc6a537af587d48316fee66e9c8c', force = True)
 
 
 @pytest.fixture(scope='module')
-def rewards_manager(deployer, merkle_contract, balancer_allocator, ldo_agent):
-    return deploy_manager(ldo_agent, balancer_allocator, merkle_contract, {"from": deployer})
+def rewards_manager(deployer, balancer_allocator, ldo_agent, interface):
+    manager_contract = deploy_manager(ldo_agent, balancer_allocator, {"from": deployer})
+    merkle_owner = interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809').owner()
+    if merkle_owner != manager_contract:
+        interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809')\
+            .transferOwnership(manager_contract, {"from": merkle_owner})
+
+    return manager_contract
 
 
 class Helpers:

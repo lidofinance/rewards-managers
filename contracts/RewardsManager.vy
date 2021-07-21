@@ -53,8 +53,7 @@ event AllocationsLimitChanged:
 owner: public(address)
 allocator: public(address)
 
-# will be replaced by const when reward contract will be deployed
-rewards_contract: public(address)
+rewards_contract: constant(address) = 0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809
 rewards_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 
 allocations_limit: public(uint256)
@@ -68,12 +67,10 @@ is_paused: public(bool)
 @external
 def __init__(
     _owner: address,
-    _allocator: address,
-    _rewards_contract: address
+    _allocator: address
 ):
     self.owner = _owner
     self.allocator = _allocator
-    self.rewards_contract = _rewards_contract
 
     self.rewards_limit_per_period = 25000 * 10**18
     self.last_accounted_period_date = block.timestamp
@@ -169,10 +166,10 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
 
     self.allocations_limit -= _amount
 
-    ERC20(rewards_token).approve(self.rewards_contract, 0)
-    ERC20(rewards_token).approve(self.rewards_contract, _amount)
+    ERC20(rewards_token).approve(rewards_contract, 0)
+    ERC20(rewards_token).approve(rewards_contract, _amount)
 
-    IRewardsContract(self.rewards_contract).seedAllocations(_week, _merkle_root, _amount)
+    IRewardsContract(rewards_contract).seedAllocations(_week, _merkle_root, _amount)
 
     log Allocation(_amount)
 
