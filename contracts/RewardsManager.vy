@@ -167,7 +167,6 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
 
     self.allocations_limit -= _amount
 
-    ERC20(rewards_token).approve(rewards_contract, 0)
     ERC20(rewards_token).approve(rewards_contract, _amount)
 
     IRewardsContract(rewards_contract).seedAllocations(_week, _merkle_root, _amount)
