@@ -4,5 +4,6 @@ __pycache__
 build/
 reports/
 venv/
+node_modules/
 .DS_Store
 .env
