@@ -11,3 +11,8 @@ networks:
       evm_version: istanbul
       mnemonic: brownie
       fork: mainnet
+reports:
+  exclude_contracts:
+    - Address
+    - SafeERC20
+  only_include_project: false

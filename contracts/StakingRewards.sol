@@ -515,8 +515,7 @@ contract StakingRewards is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    uint256 private _totalSupply;
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) internal _balances;
 
     /* ========== CONSTRUCTOR ========== */
 
@@ -535,9 +534,7 @@ contract StakingRewards is
 
     /* ========== VIEWS ========== */
 
-    function totalSupply() external view returns (uint256) {
-        return _totalSupply;
-    }
+    function totalSupply() public view returns (uint256);
 
     function balanceOf(address account) external view returns (uint256) {
         return _balances[account];
@@ -548,13 +545,13 @@ contract StakingRewards is
     }
 
     function rewardPerToken() public view returns (uint256) {
-        if (_totalSupply == 0) {
+        if (totalSupply() == 0) {
             return rewardPerTokenStored;
         }
         return
             rewardPerTokenStored.add(
                 lastTimeRewardApplicable().sub(lastUpdateTime).mul(rewardRate).mul(1e18).div(
-                    _totalSupply
+                    totalSupply()
                 )
             );
     }
@@ -569,38 +566,6 @@ contract StakingRewards is
 
     function getRewardForDuration() external view returns (uint256) {
         return rewardRate.mul(rewardsDuration);
-    }
-
-    /* ========== MUTATIVE FUNCTIONS ========== */
-
-    function stake(uint256 amount) external nonReentrant notPaused updateReward(msg.sender) {
-        require(amount > 0, "Cannot stake 0");
-        _totalSupply = _totalSupply.add(amount);
-        _balances[msg.sender] = _balances[msg.sender].add(amount);
-        stakingToken.safeTransferFrom(msg.sender, address(this), amount);
-        emit Staked(msg.sender, amount);
-    }
-
-    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
-        require(amount > 0, "Cannot withdraw 0");
-        _totalSupply = _totalSupply.sub(amount);
-        _balances[msg.sender] = _balances[msg.sender].sub(amount);
-        stakingToken.safeTransfer(msg.sender, amount);
-        emit Withdrawn(msg.sender, amount);
-    }
-
-    function getReward() public nonReentrant updateReward(msg.sender) {
-        uint256 reward = rewards[msg.sender];
-        if (reward > 0) {
-            rewards[msg.sender] = 0;
-            rewardsToken.safeTransfer(msg.sender, reward);
-            emit RewardPaid(msg.sender, reward);
-        }
-    }
-
-    function exit() external {
-        withdraw(_balances[msg.sender]);
-        getReward();
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */
@@ -644,6 +609,15 @@ contract StakingRewards is
         emit RewardsDurationUpdated(rewardsDuration);
     }
 
+    function _payReward(address user, address recipient) internal nonReentrant updateReward(user) {
+        uint256 reward = rewards[user];
+        if (reward > 0) {
+            rewards[user] = 0;
+            rewardsToken.safeTransfer(recipient, reward);
+            emit RewardPaid(user, recipient, reward);
+        }
+    }
+
     /* ========== MODIFIERS ========== */
 
     modifier updateReward(address account) {
@@ -661,7 +635,7 @@ contract StakingRewards is
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
-    event RewardPaid(address indexed user, uint256 reward);
+    event RewardPaid(address indexed user, address indexed recipient, uint256 reward);
     event RewardsDurationUpdated(uint256 newDuration);
     event Recovered(address token, uint256 amount);
 }
