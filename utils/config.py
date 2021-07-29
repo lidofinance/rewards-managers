@@ -3,7 +3,7 @@ import sys
 from brownie import network, accounts
 
 
-lp_token_address = "0x06325440d014e39736583c165c2963ba99faf14e"
+lp_token_address = ""  # TODO set lpToken address when it will be deployed
 ldo_token_address = "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
 lido_dao_agent_address = "0x3e40D73EB977Dc6a537aF587D48316feE66E9C8c"
 lido_dao_finance_address = "0xB9E5CBB9CA5b0d659238807E84D0176930753d86"

@@ -1,6 +1,6 @@
 import sys
 
-from brownie import network, accounts, RewardsManager, StakingRewardsCurve, Wei
+from brownie import RewardsManager, StakingRewardsSushi, Wei
 
 from utils.config import (
     lp_token_address,
@@ -11,6 +11,7 @@ from utils.config import (
     get_is_live,
     get_deployer_account,
     prompt_bool,
+    sushi_master_chef_v2,
 )
 
 
@@ -20,12 +21,13 @@ def deploy_manager(tx_params):
 
 
 def deploy_rewards(manager_contract, rewards_duration, tx_params, publish_source=True):
-    return StakingRewardsCurve.deploy(
+    return StakingRewardsSushi.deploy(
         lido_dao_agent_address,  # _owner
         manager_contract,  # _rewardsDistribution
         ldo_token_address,  # _rewardsToken
         lp_token_address,  # _stakingToken
         rewards_duration,  # _rewardsDuration
+        sushi_master_chef_v2,  # _masterChefV2
         tx_params,
         publish_source=publish_source,
     )
