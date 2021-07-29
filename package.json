@@ -1,0 +1,19 @@
+{
+    "name": "lido",
+    "version": "0.0.0",
+    "description": "",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "clean": "rm -rf build/",
+        "compile": "npm run clean && truffle compile",
+        "migrate": "truffle migrate",
+        "test": "truffle test"
+    },
+    "author": "Folks from MadDevs",
+    "license": "UNLICENSED",
+    "dependencies": {
+        "truffle": "^5.4.2"
+    }
+}
