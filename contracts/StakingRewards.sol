@@ -152,16 +152,6 @@ interface IStakingRewards {
     function totalSupply() external view returns (uint256);
 
     function balanceOf(address account) external view returns (uint256);
-
-    // Mutative
-
-    function stake(uint256 amount) external;
-
-    function withdraw(uint256 amount) external;
-
-    function getReward() external;
-
-    function exit() external;
 }
 
 library Math {
@@ -525,7 +515,7 @@ contract StakingRewards is
         address _rewardsToken,
         address _stakingToken,
         uint256 _rewardsDuration
-    ) public Owned(_owner) {
+    ) internal Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
         stakingToken = IERC20(_stakingToken);
         rewardsDistribution = _rewardsDistribution;
