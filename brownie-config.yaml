@@ -15,4 +15,7 @@ reports:
   exclude_contracts:
     - Address
     - SafeERC20
+    - DropToken
+    - SafeMath
+    - Owned
   only_include_project: false
