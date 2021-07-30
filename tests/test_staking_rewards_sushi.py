@@ -1,14 +1,14 @@
 import pytest
-from brownie import StakingRewardsCurve, StakingRewardsSushi, reverts
+from brownie import StakingRewardsSushi, reverts
 from utils.config import sushi_master_chef_v2, initial_rewards_duration_sec
 
 DEPOSIT_AMOUNT = 1000 * 10 ** 18
 
 
-def test_deploy(ape, accounts, ldo_token, lp_token):
+def test_deploy(ape, accounts, ldo_token, lp_token_sushi):
     owner = accounts[2]
     rewards_distribution = accounts[3]
-    staking_token = lp_token
+    staking_token = lp_token_sushi
     rewards_token = ldo_token
 
     contract = StakingRewardsSushi.deploy(

@@ -18,10 +18,9 @@ def another_rewards_manager(RewardsManager, ape):
 
 
 @pytest.fixture()
-def deployed_contracts(rewards_helpers, ape):
+def deployed_contracts(lp_token_sushi, rewards_helpers, ape):
     return rewards_helpers.deploy_rewards(
-        rewards_period=rewards_period,
-        deployer=ape
+        lp_token=lp_token_sushi, rewards_period=rewards_period, deployer=ape
     )
 
 
@@ -44,15 +43,17 @@ def test_ownership_can_be_transferred_to_zero_address(rewards_manager, ape):
     assert rewards_manager.owner() == ZERO_ADDRESS
 
 
-def test_stranger_can_not_set_rewards_contract(rewards_manager, another_rewards_manager, stranger):
+def test_stranger_can_not_set_rewards_contract(
+    rewards_manager, another_rewards_manager, stranger
+):
     with brownie.reverts("not permitted"):
         rewards_manager.set_rewards_contract(
-            another_rewards_manager, {"from": stranger})
+            another_rewards_manager, {"from": stranger}
+        )
 
 
 def test_owner_can_set_rewards_contract(rewards_manager, another_rewards_manager, ape):
-    rewards_manager.set_rewards_contract(
-        another_rewards_manager, {"from": ape})
+    rewards_manager.set_rewards_contract(another_rewards_manager, {"from": ape})
     assert rewards_manager.rewards_contract() == another_rewards_manager
 
 
@@ -75,18 +76,24 @@ def test_stranger_can_check_is_rewards_period_finished(deployed_contracts, stran
     assert manager.is_rewards_period_finished({"from": stranger}) == True
 
 
-def test_stranger_can_not_start_next_rewards_period_without_rewards_contract_set(rewards_manager, stranger):
+def test_stranger_can_not_start_next_rewards_period_without_rewards_contract_set(
+    rewards_manager, stranger
+):
     with brownie.reverts("manager: rewards disabled"):
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-def test_stranger_can_not_start_next_rewards_period_with_zero_amount(deployed_contracts, stranger, ape):
+def test_stranger_can_not_start_next_rewards_period_with_zero_amount(
+    deployed_contracts, stranger, ape
+):
     (manager, _) = deployed_contracts
     with brownie.reverts("manager: rewards disabled"):
         manager.start_next_rewards_period({"from": stranger})
 
 
-def test_stranger_starts_next_rewards_period(deployed_contracts, ldo_token, dao_agent, stranger):
+def test_stranger_starts_next_rewards_period(
+    deployed_contracts, ldo_token, dao_agent, stranger
+):
     (manager, _) = deployed_contracts
     rewards_amount = brownie.Wei("1 ether")
     ldo_token.transfer(manager, rewards_amount, {"from": dao_agent})
@@ -95,7 +102,9 @@ def test_stranger_starts_next_rewards_period(deployed_contracts, ldo_token, dao_
     assert manager.is_rewards_period_finished({"from": stranger}) == False
 
 
-def test_stranger_can_not_start_next_rewards_period_while_current_is_active(deployed_contracts, ldo_token, dao_agent, stranger):
+def test_stranger_can_not_start_next_rewards_period_while_current_is_active(
+    deployed_contracts, ldo_token, dao_agent, stranger
+):
     (manager, _) = deployed_contracts
     rewards_amount = brownie.Wei("1 ether")
     ldo_token.transfer(manager, rewards_amount, {"from": dao_agent})
@@ -111,7 +120,9 @@ def test_stranger_can_not_start_next_rewards_period_while_current_is_active(depl
         manager.start_next_rewards_period({"from": stranger})
 
 
-def test_stranger_can_start_next_rewards_period_after_current_is_finished(deployed_contracts, ldo_token, dao_agent, stranger):
+def test_stranger_can_start_next_rewards_period_after_current_is_finished(
+    deployed_contracts, ldo_token, dao_agent, stranger
+):
     (manager, _) = deployed_contracts
     rewards_amount = brownie.Wei("1 ether")
     ldo_token.transfer(manager, rewards_amount, {"from": dao_agent})

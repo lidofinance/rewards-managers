@@ -1,5 +1,5 @@
 import pytest
-from brownie import StakingRewardsCurve, StakingRewardsSushi, reverts
+from brownie import StakingRewardsSushi, reverts
 from brownie.network import Chain
 
 
