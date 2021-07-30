@@ -28,12 +28,17 @@ def master_chef_v2_owner(accounts):
 
 
 @pytest.fixture(scope="function")
-def statking_rewards_sushi(
-    ape, lp_token_sushi, ldo_token, master_chef_v2, master_chef_v2_owner
+def staking_rewards_sushi(
+    ape,
+    rewards_manager,
+    lp_token_sushi,
+    ldo_token,
+    master_chef_v2,
+    master_chef_v2_owner,
 ):
     staking_rewards_sushi = StakingRewardsSushi.deploy(
         ape,
-        ape,
+        rewards_manager,
         ldo_token,
         lp_token_sushi,
         initial_rewards_duration_sec,
@@ -45,18 +50,6 @@ def statking_rewards_sushi(
         100, lp_token_sushi, staking_rewards_sushi, {"from": master_chef_v2_owner}
     )
     return staking_rewards_sushi
-
-
-@pytest.fixture
-def notify_reward_amount_sushi(ape, dao_agent, statking_rewards_sushi, ldo_token):
-    reward_amount = 100_000 * 10 ** 18
-    ldo_token.approve(statking_rewards_sushi, reward_amount, {"from": dao_agent})
-    statking_rewards_sushi.notifyRewardAmount(reward_amount, dao_agent, {"from": ape})
-    assert (
-        statking_rewards_sushi.rewardRate()
-        == reward_amount // initial_rewards_duration_sec
-    )
-    assert statking_rewards_sushi.periodFinish() != 0
 
 
 @pytest.fixture(scope="module")
@@ -110,17 +103,27 @@ def ldo_token(interface):
     return interface.ERC20(ldo_token_address)
 
 
-class RewardsHelpers:
-    @staticmethod
-    def deploy_rewards(lp_token, rewards_period, deployer):
-        return deploy_manager_and_rewards(
-            lp_token=lp_token,
-            rewards_duration=rewards_period,
-            tx_params={"from": deployer},
-            publish_source=False,
-        )
+@pytest.fixture(scope="function")
+def rewards_manager(RewardsManager, ape):
+    return RewardsManager.deploy({"from": ape})
 
 
-@pytest.fixture(scope="module")
-def rewards_helpers():
-    return RewardsHelpers
+@pytest.fixture
+def notify_reward_amount_sushi(
+    rewards_manager, dao_agent, staking_rewards_sushi, ldo_token
+):
+    reward_amount = 100_000 * 10 ** 18
+    ldo_token.approve(staking_rewards_sushi, reward_amount, {"from": dao_agent})
+    staking_rewards_sushi.notifyRewardAmount(
+        reward_amount, dao_agent, {"from": rewards_manager}
+    )
+    assert (
+        staking_rewards_sushi.rewardRate()
+        == reward_amount // initial_rewards_duration_sec
+    )
+    assert staking_rewards_sushi.periodFinish() != 0
+
+
+@pytest.fixture(scope="function")
+def set_rewards_contract(ape, staking_rewards_sushi, rewards_manager):
+    rewards_manager.set_rewards_contract(staking_rewards_sushi, {"from": ape})

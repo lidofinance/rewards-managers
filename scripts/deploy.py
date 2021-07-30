@@ -72,6 +72,7 @@ def main():
         return
 
     deploy_manager_and_rewards(
+        lp_token=lp_token_address,
         rewards_duration=initial_rewards_duration_sec,
         tx_params={"from": deployer, "gas_price": Wei(gas_price), "required_confs": 1},
         publish_source=is_live,
