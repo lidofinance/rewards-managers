@@ -2,7 +2,7 @@
 
 Fork of [lidofinance/staking-rewards-manager](https://github.com/lidofinance/staking-rewards-manager) repository.
 
-Contains the implementation of Rewarder for SushiSwap's MasterChefV2 contract and helper RewardsManager contract for simplifying its management using DAO voting. Rewarder based on Synthetix's [StakingRewards.sol](https://github.com/lidofinance/staking-rewards-manager/blob/main/contracts/StakingRewards.sol) contract which Lido has already used in Curve's liquidity pool.
+Contains the implementation of Rewarder for SushiSwap's [MasterChefV2](https://dev.sushi.com/sushiswap/contracts/masterchefv2) contract and helper RewardsManager contract for simplifying its management using DAO voting. Rewarder based on Synthetix's [StakingRewards.sol](https://github.com/lidofinance/staking-rewards-manager/blob/main/contracts/StakingRewards.sol) contract which Lido has already used in Curve's liquidity pool.
 
 ## Core Contracts
 
