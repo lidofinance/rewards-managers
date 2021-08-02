@@ -80,6 +80,43 @@ async function provideLiquidityToPool(user, pool, t0, t1, maxAmounts, minAmounts
     assert.isAbove((await pool.balanceOf(user)).toNumber(), 0);
 }
 
+async function stakeToRewards(user, pool, rewards) {
+    const lpUserBalanceBefore = (await pool.balanceOf(user)).toNumber();
+    const lpRewardsBalanceBefore = (await pool.balanceOf(rewards.address)).toNumber();
+    const stUserBalanceBefore = (await rewards.balanceOf(user)).toNumber();
+
+    assert.isAbove(lpUserBalanceBefore, 0);
+    assert.equal(lpRewardsBalanceBefore, 0);
+    assert.equal(stUserBalanceBefore, 0);
+
+    await pool.approve(rewards.address, lpUserBalanceBefore, { from: user });
+    await rewards.stake(lpUserBalanceBefore, { from: user });
+
+    const lpUserBalanceAfter = (await pool.balanceOf(user)).toNumber();
+    const lpRewardsBalanceAfter = (await pool.balanceOf(rewards.address)).toNumber();
+    const stUserBalanceAfter = (await rewards.balanceOf(user)).toNumber();
+
+    assert.equal(lpRewardsBalanceAfter, lpUserBalanceBefore);
+    assert.equal(lpUserBalanceAfter, 0);
+    assert.isAbove(stUserBalanceAfter, 0);
+}
+
+async function exitFromRewards(user, pool, rewards) {
+    const lpUserBalanceBefore = (await pool.balanceOf(user)).toNumber();
+    const lpRewardsBalanceBefore = (await pool.balanceOf(rewards.address)).toNumber();
+
+    assert.equal(lpUserBalanceBefore, 0);
+    assert.isAbove(lpRewardsBalanceBefore, 0);
+
+    await rewards.exit({ from: user });
+
+    const lpUserBalanceAfter = (await pool.balanceOf(user)).toNumber();
+    const lpRewardsBalanceAfter = (await pool.balanceOf(rewards.address)).toNumber();
+
+    assert.equal(lpUserBalanceAfter, lpRewardsBalanceBefore);
+    assert.equal(lpRewardsBalanceAfter, 0);
+}
+
 describe('Flow', () => {
     it('Simulate', async () => {
         const accounts = await web3.eth.getAccounts();
@@ -109,13 +146,30 @@ describe('Flow', () => {
          */
         await rewardsContract.addGift(ldoToken.address, 1000, ldoOwner, 100, { from: stEthDaiPoolOwner });
 
+        /**
+         * Give user 2K DAI and 2K stETH tokens.
+         */
         await giveTokens(daiToken, daiOwner, liquidityProvider, 2000);
         await giveTokens(stEthToken, stEthOwner, liquidityProvider, 2000);
 
         /**
-         * Didn't had enough time to make things work with rewards contract
+         * Put user's DAI and stETH tokens to liquidity pool (provide liquidity).
+         * Pool evaluates amount of tokens to receive, base on some "fair" rules.
+         * It does not take all amount, but takes something between min/max of each token from accepted pair.
+         * This should guarantee that pool token-to-token balance is not radically changed.
+         *
+         * User received LP tokens in reward.
          */
-
         await provideLiquidityToPool(liquidityProvider, stEthDaiPool, stEthToken, daiToken, [1500, 1500], [1000, 1000]);
+
+        /**
+         * User stakes obtained LP tokens to rewards contract.
+         */
+        await stakeToRewards(liquidityProvider, stEthDaiPool, rewardsContract);
+
+        /**
+         * User exits from rewarding program by withdrawing all of the LP tokens.
+         */
+        await exitFromRewards(liquidityProvider, stEthDaiPool, rewardsContract);
     });
 });
