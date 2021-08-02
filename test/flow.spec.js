@@ -117,6 +117,35 @@ async function exitFromRewards(user, pool, rewards) {
     assert.equal(lpRewardsBalanceAfter, 0);
 }
 
+async function withdrawLiquidityFromPool(user, pool, t0, t1) {
+    const lpUserBalanceBefore = (await pool.balanceOf(user)).toNumber();
+    const t0UserBalanceBefore = (await t0.balanceOf(user)).toNumber();
+    const t1UserBalanceBefore = (await t1.balanceOf(user)).toNumber();
+    const t0PoolBalanceBefore = (await t0.balanceOf(pool.address)).toNumber();
+    const t1PoolBalanceBefore = (await t1.balanceOf(pool.address)).toNumber();
+
+    const minAmounts = [1000, 1000];
+
+    await pool.withdraw(lpUserBalanceBefore, minAmounts, { from: user });
+
+    const lpUserBalanceAfter = (await pool.balanceOf(user)).toNumber();
+    const t0UserBalanceAfter = (await t0.balanceOf(user)).toNumber();
+    const t1UserBalanceAfter = (await t1.balanceOf(user)).toNumber();
+    const t0PoolBalanceAfter = (await t0.balanceOf(pool.address)).toNumber();
+    const t1PoolBalanceAfter = (await t1.balanceOf(pool.address)).toNumber();
+
+    assert.isAbove(t0PoolBalanceBefore, t0PoolBalanceAfter);
+    assert.isAbove(t1PoolBalanceBefore, t1PoolBalanceAfter);
+
+    assert.isAbove(lpUserBalanceBefore, lpUserBalanceAfter);
+
+    assert.isAbove(t0UserBalanceAfter, t0UserBalanceBefore);
+    assert.equal(t0UserBalanceAfter, t0UserBalanceBefore + t0PoolBalanceBefore - t0PoolBalanceAfter);
+
+    assert.isAbove(t1UserBalanceAfter, t1UserBalanceBefore);
+    assert.equal(t1UserBalanceAfter, t1UserBalanceBefore + t1PoolBalanceBefore - t1PoolBalanceAfter);
+}
+
 describe('Flow', () => {
     it('Simulate', async () => {
         const accounts = await web3.eth.getAccounts();
@@ -171,5 +200,10 @@ describe('Flow', () => {
          * User exits from rewarding program by withdrawing all of the LP tokens.
          */
         await exitFromRewards(liquidityProvider, stEthDaiPool, rewardsContract);
+
+        /**
+         * User withdraws LP tokens from liquidity pool
+         */
+        await withdrawLiquidityFromPool(liquidityProvider, stEthDaiPool, stEthToken, daiToken);
     });
 });
