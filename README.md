@@ -8,7 +8,7 @@ Contains the implementation of Rewarder for SushiSwap's MasterChefV2 contract an
 
 ### StakingRewards.sol
 
-To use StakingRewards contract as a base contract for SushiRewarder next changes were applied to StakingRewards.sol contract:
+To use StakingRewards contract as a base contract for SushiRewarder next changes were applied to [StakingRewards.sol](https://github.com/lidofinance/staking-rewards-manager/blob/main/contracts/StakingRewards.sol) contract:
 
 - Methods `stake(uint256 amount)`, `withdraw(uint256 amount)`, and `exit()` were removed. MasterChefV2 will take control over this operations.
 - External method `getReward()` was replaced with the internal method `_payReward(address user, address recipient)` which allows paying rewards of the user to another `recipient`'s address.
@@ -23,7 +23,7 @@ The above changes don't touch rewards calculation logic and only modifies the in
 
 ### StakingRewardsSushi.sol
 
-Inherits logic of StakingRewards contract and implements Sushi's `IRewarder` interface to make it possible to use as a rewarder in MasterChefV2 contract.
+Inherits logic of StakingRewards contract and implements Sushi's `IRewarder` interface to make it possible to use as a rewarder in [MasterChefV2](https://dev.sushi.com/sushiswap/contracts/masterchefv2) contract.
 
 To be used in MasterChefV2 contract it has to implement next interface:
 
@@ -45,10 +45,10 @@ interface IRewarder {
 }
 ```
 
-Method `pendingTokens` is used by SushiSwaps's UI and must return a tuple with a list of rewardTokens distributes by the rewarder and a list of amounts of tokens gained by the user.
+Method `pendingTokens` is used by SushiSwap's UI and must return a tuple with a list of rewardTokens distributes by the rewarder and a list of amounts of tokens gained by the user.
 In current implementation `SushiStakingRewards` distributes only one `rewardsToken`, and returns next value from `pendingTokens` method: `([rewardsToken], [earned(msg.sender)])`
 
-Method `onSushiReward` is executed on the distribution of rewards with the user and the amount of Sushi given out being specified or on any change of balance of user's lpTokens. In the current implementation, this method validates that method was called by MasterChefV2 contract with correct pid value, calls method `_payReward(user, recipient)` and updates user balance.
+Method `onSushiReward` is executed on the distribution of rewards with the user and the amount of Sushi given out being specified or on any change of user's balance of `stakingToken`. In the current implementation, this method validates that method was called by MasterChefV2 contract with correct pid value, calls method `_payReward(user, recipient)` and updates user balance in `_balances` mapping.
 
 To be deployable `SushiStakingRewards` implements abstract method `totalSupply()` from `StakingRewards.sol` contract in next way:
 
