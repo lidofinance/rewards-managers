@@ -18,6 +18,7 @@ To use StakingRewards contract as a base contract for SushiRewarder next changes
 - Variable `_totalSupply` was removed and all its usages were replaced with `totalSupply()` view.
 - Constructor of the contract became internal cause the contract is abstract now and can't be deployed.
 - Visibility of `_balances` variable was changed from `private` to `internal`. This is necessary to make it accessible in the child contracts.
+- Was added method `updatePeriodFinish(uint timestamp)` which was added into original Synthetix's StakingRewards contract after creation of repo [lidofinance/staking-rewards-manager](https://github.com/lidofinance/staking-rewards-manager). This method might be helpful for emergency stop of reward distribution (`periodFinish` value might be set to past block, and new rewards will not be distributed)
 
 The above changes don't touch rewards calculation logic and only modifies the interface of a contract to make it possible to use it as a base contract for different rewarder contracts. For example, we can implement the current Lido's Curve contract using the modified StakingRewards contract as a base contract, or implement a rewarder for SushiSwap's liquidity pool.
 

@@ -543,6 +543,11 @@ contract StakingRewards is IStakingRewards, RewardsDistributionRecipient, Reentr
         emit RewardsDurationUpdated(rewardsDuration);
     }
 
+    // End rewards emission earlier
+    function updatePeriodFinish(uint timestamp) external onlyOwner updateReward(address(0)) {
+        periodFinish = timestamp;
+    }
+
     function _payReward(address user, address recipient) internal nonReentrant updateReward(user) {
         uint256 reward = rewards[user];
         if (reward > 0) {

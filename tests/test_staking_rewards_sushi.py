@@ -1,5 +1,5 @@
 import pytest
-from brownie import StakingRewardsSushi, reverts
+from brownie import StakingRewardsSushi, reverts, chain
 from utils.config import sushi_master_chef_v2, initial_rewards_duration_sec
 
 DEPOSIT_AMOUNT = 1000 * 10 ** 18
@@ -84,6 +84,10 @@ def test_pending_tokens(
 
     # simulate deposit to make rewardPerToken > 0
     lp_token_sushi.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    #  wait some time till reward will become greater than 0
+    chain.sleep(60)
+    chain.mine()
+
     assert staking_rewards_sushi.rewardPerToken() > 0
 
     pending_tokens, pending_amounts = staking_rewards_sushi.pendingTokens(pid, ape, 0)
@@ -92,3 +96,18 @@ def test_pending_tokens(
 
     assert len(pending_amounts) == 1
     assert pending_amounts[0] == staking_rewards_sushi.earned(ape)
+
+def test_update_period_finish_called_by_stranger(stranger, staking_rewards_sushi):
+    new_period_finish = chain[-1].timestamp + 7 * 24 * 60 * 60
+    with reverts('Only the contract owner may perform this action'):
+        staking_rewards_sushi.updatePeriodFinish(new_period_finish, {"from": stranger})
+
+@pytest.mark.usefixtures("notify_reward_amount_sushi")
+def test_update_period_finish(ape, staking_rewards_sushi):
+    new_period_finish = chain[-1].timestamp + 7 * 24 * 60 * 60
+    reward_rate = staking_rewards_sushi.rewardRate()
+    assert staking_rewards_sushi.periodFinish() != new_period_finish
+    staking_rewards_sushi.updatePeriodFinish(new_period_finish, {"from": ape})
+    assert staking_rewards_sushi.periodFinish() == new_period_finish
+    # validate that rewardRate stayed same
+    assert staking_rewards_sushi.rewardRate() == reward_rate
