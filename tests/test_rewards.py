@@ -43,7 +43,6 @@ def test_happy_path(
         ldo_token,
         lp_token_sushi,
         rewards_period,
-        master_chef_v2,
         {"from": ape},
     )
 

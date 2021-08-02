@@ -10,7 +10,6 @@ from utils.config import (
     get_is_live,
     get_deployer_account,
     prompt_bool,
-    sushi_master_chef_v2,
     lp_token_address,
 )
 
@@ -29,7 +28,6 @@ def deploy_rewards(
         ldo_token_address,  # _rewardsToken
         lp_token,  # _stakingToken
         rewards_duration,  # _rewardsDuration
-        sushi_master_chef_v2,  # _masterChefV2
         tx_params,
         publish_source=publish_source,
     )

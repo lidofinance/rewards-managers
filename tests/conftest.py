@@ -42,7 +42,6 @@ def staking_rewards_sushi(
         ldo_token,
         lp_token_sushi,
         initial_rewards_duration_sec,
-        master_chef_v2,
         {"from": ape},
     )
     # create pool in master chef v2 for new rewarder

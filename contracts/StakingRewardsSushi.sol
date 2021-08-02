@@ -23,21 +23,18 @@ interface IMasterChefV2 {
 }
 
 contract StakingRewardsSushi is StakingRewards, IRewarder {
-    address public MASTERCHEF_V2;
+    address public constant MASTERCHEF_V2 = 0xEF0881eC094552b2e128Cf945EF17a6752B4Ec5d;
 
     constructor(
         address _owner,
         address _rewardsDistribution,
         address _rewardsToken,
         address _stakingToken,
-        uint256 _rewardsDuration,
-        address _masterChefV2
+        uint256 _rewardsDuration
     )
         public
         StakingRewards(_owner, _rewardsDistribution, _rewardsToken, _stakingToken, _rewardsDuration)
-    {
-        MASTERCHEF_V2 = _masterChefV2;
-    }
+    {}
 
     function totalSupply() public view returns (uint256) {
         return stakingToken.balanceOf(MASTERCHEF_V2);

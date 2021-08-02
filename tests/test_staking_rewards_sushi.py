@@ -17,7 +17,6 @@ def test_deploy(ape, accounts, ldo_token, lp_token_sushi):
         rewards_token,
         staking_token,
         initial_rewards_duration_sec,
-        sushi_master_chef_v2,
         {"from": ape},
     )
 
