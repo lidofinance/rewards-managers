@@ -63,3 +63,9 @@ where `MASTERCHEF_V2` is an address of MasterChefV2 contract.
 ### RewardsManager.vy
 
 This contract simplifies operations with reward periods of StakingRewards contracts for DAO. Was used without any changes from the original repository.
+
+## Scripts
+
+### `deploy.py`
+
+Contains script to deploy `StakingRewardsSushi` and `RewardsManager` contracts. The script requires `DEPLOYER` ENV variable be set.
