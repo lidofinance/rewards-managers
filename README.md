@@ -64,6 +64,25 @@ where `MASTERCHEF_V2` is an address of MasterChefV2 contract.
 
 This contract simplifies operations with reward periods of StakingRewards contracts for DAO. Was used without any changes from the original repository.
 
+## Project Setup
+
+To use the tools that this project provides, please pull the repository from GitHub and install its dependencies as follows. It is recommended to use a Python virtual environment.
+
+```bash
+git clone https://github.com/lidofinance/staking-rewards-sushi
+cd staking-rewards-sushi
+npm install
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements-dev.txt
+```
+
+Compile the Smart Contracts:
+
+```bash
+brownie compile # add `--size` to see contract compiled sizes
+```
+
 ## Scripts
 
 ### `deploy.py`
