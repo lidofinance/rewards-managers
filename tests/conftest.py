@@ -81,16 +81,6 @@ def dao_finance(interface):
     return interface.Finance(lido_dao_finance_address)
 
 
-@pytest.fixture(scope="module")
-def dao_holder(accounts):
-    return accounts.at("0x537dfB5f599A3d15C50E2d9270e46b808A52559D", force=True)
-
-
-@pytest.fixture(scope="module")
-def lido(interface):
-    return interface.Lido("0xae7ab96520de3a18e5e111b5eaab095312d7fe84")
-
-
 # Lido DAO Agent app
 @pytest.fixture(scope="module")
 def dao_agent(interface):
