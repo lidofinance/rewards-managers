@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021 Lido <info@lido.fi>
+// SPDX-License-Identifier: MIT
+
 pragma solidity 0.5.17;
 
 import "./StakingRewards.sol";
@@ -27,6 +30,7 @@ interface IMasterChefV2 {
 
 /// @notice Rewarder to be used in MasterChefV2 contract based on
 /// Synthetix's StakingRewards contract
+/// @author psirex
 contract StakingRewardsSushi is StakingRewards, IRewarder {
     address public constant MASTERCHEF_V2 = 0xEF0881eC094552b2e128Cf945EF17a6752B4Ec5d;
 
