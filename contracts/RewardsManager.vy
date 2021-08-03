@@ -270,7 +270,7 @@ def change_allocator(_new_allocator: address):
 def recover_erc20(_token: address, _amount: uint256):
     """
     @notice
-        Transfers the whole balance of the given ERC20 token from self
+        Transfers specified amount of the given ERC20 token from self
         to the owner. Can only be called by the owner.
     """
     owner: address = self.owner
