@@ -14,6 +14,7 @@
     "author": "Folks from MadDevs",
     "license": "UNLICENSED",
     "dependencies": {
+        "@openzeppelin/contracts": "^3.2.0",
         "truffle": "^5.4.2"
     }
 }
