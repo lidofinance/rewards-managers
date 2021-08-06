@@ -52,7 +52,7 @@ contract RewardsManager is Ownable, Pausable {
     function start_next_rewards_period() public {
         uint amount = IERC20(rewardToken).balanceOf(address(this));
         require(amount > 0, "Rewards disabled");
-        require(!is_reward_period_finished(), "Rewards period not finished");
+        require(is_reward_period_finished(), "Rewards period not finished");
         IERC20(rewardToken).approve(rewardsContract, amount);
         IFarmingRewards(rewardsContract).notifyRewardAmount(giftIndex, amount);
     }
