@@ -23,16 +23,16 @@ npm install
 ├── build                         # Truffle artifacts
 ├── coverage                      # Coverage reports
 ├── contracts                     # Smart-contract implementations (solidity sources)
-│     ├── Migrations.sol            # Common truffle migrations source
-│     ├── Mocks.sol                 # Custom contracts that are mocks or helpers to support flow simulation
-│     ├── RewardsManager.sol        # Reward manager implementation
-│     └── Vendor.sol                # Fattened source of 1INCH rewards farming contract and it's dependencies
-├── migrations
-│     └── 1_initial_migration.js    # Migrations deployment script
+│     ├── Migrations.sol          # Common truffle migrations source
+│     ├── Mocks.sol               # Custom contracts that are mocks or helpers to support flow simulation
+│     ├── RewardsManager.sol      # Reward manager implementation
+│     └── Vendor.sol              # Fattened source of 1INCH rewards farming contract and it's dependencies
+├── migrations                    # Deployment script
+│     └── 1_initial_migration.js  # Migrations contract deployment script
 ├── package.json                  # NPM dependencies and project configuration file
 ├── README.md                     # Project README file
 ├── test                          # Acceptance tests
-│     └── flow.spec.js              # Full flow simulation
+│     └── flow.spec.js            # Full flow simulation
 └── truffle-config.js             # Truffle project configuration file
 ```
 Key points:

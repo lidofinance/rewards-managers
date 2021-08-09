@@ -12,23 +12,20 @@ async function deployToken(name, sym, supply, owner) {
     return token;
 }
 
-async function deployRewardsManager(rewardsOwner, giftIndex, rewards, token) {
-    const rewardsManager = await RewardsManager.new(giftIndex, rewards.address, { from: rewardsOwner });
+async function deployRewardsManager(owner, giftIndex, rewards, token) {
+    const rewardsManager = await RewardsManager.new(giftIndex, rewards.address, { from: owner });
 
-    await rewardsManager.setTokenContract(token.address, { from: rewardsOwner });
+    await rewardsManager.setTokenContract(token.address, { from: owner });
 
     return rewardsManager;
 }
 
-async function startNextRewardPeriod(rewardsManagerOwner, rewardsManager, token, tokenOwner, tokenAmount) {
-    /**
-     * Aragon should do this
-     */
+async function startNextRewardPeriod(rewardsManager, token, tokenOwner, tokenAmount) {
     await token.transfer(rewardsManager.address, tokenAmount, { from: tokenOwner });
 
     assert.equal((await token.balanceOf(rewardsManager.address)).toNumber(), tokenAmount);
 
-    await rewardsManager.start_next_rewards_period({ from: rewardsManagerOwner });
+    await rewardsManager.start_next_rewards_period();
 }
 
 async function deployPoolAndRewards(owner, token0, token1, giftToken, distribution, duration, scale) {
@@ -182,20 +179,25 @@ describe('Flow', () => {
             daiToken,
             inchToken,
             inchOwner,
-            1000,   // Not sure about this
-            100     // Not sure about this
+            100000,     // Not sure about this
+            10          // Not sure about this
         );
 
         const rewardManager = await deployRewardsManager(rewardManagerOwner, 1, rewardsContract, ldoToken);
 
         /**
-         * Not sure about last two params:
-         * - Here may be dependence on `block.timestamp` for `duration`.
+         * Not sure about last params:
+         * - Here may be a dependence on `block.timestamp` for `duration`.
          * - Need to figure out how `scale` is actually used in computations.
          */
-        await rewardsContract.addGift(rewardManager.address, 1000, rewardManager.address, 100, { from: stEthDaiPoolOwner });
+        await rewardsContract.addGift(ldoToken.address, 100000, rewardManager.address, 10, { from: stEthDaiPoolOwner });
 
-        // await startNextRewardPeriod(rewardManagerOwner, rewardManager, ldoToken, ldoOwner, 200000);
+        /**
+         * Actions that should be triggered by Aragon voting.
+         * For simplicity, just send LDO tokens instead of using full Aragon Voting flow
+         * (that is considered "just working").
+         */
+        await startNextRewardPeriod(rewardManager, ldoToken, ldoOwner, 200000);
 
         /**
          * Give user 2K DAI and 2K stETH tokens.
