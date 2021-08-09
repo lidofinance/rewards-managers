@@ -2,13 +2,11 @@
     "name": "lido",
     "version": "0.0.0",
     "description": "",
-    "directories": {
-        "test": "test"
-    },
     "scripts": {
         "clean": "rm -rf build/",
         "compile": "npm run clean && truffle compile",
         "migrate": "truffle migrate",
+        "ganache": "ganache-cli -l 9000000000000000 -g 0 --allowUnlimitedContractSize",
         "test": "truffle test"
     },
     "author": "Folks from MadDevs",
