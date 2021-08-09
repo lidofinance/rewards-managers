@@ -60,6 +60,9 @@ def is_rewards_period_finished() -> bool:
 @view
 @external
 def period_finish() -> uint256:
+    """
+    @notice Returns end of the rewards period of StakingRewards contract
+    """
     return self._period_finish(self.rewards_contract)
 
 @external
@@ -81,13 +84,12 @@ def start_next_rewards_period():
 
 
 @external
-def recover_erc20(_token: address, _recipient: address = msg.sender):
+def recover_erc20(_token: address, _amount: uint256, _recipient: address = msg.sender):
     """
     @notice
-        Transfers the whole balance of the given ERC20 token from self
+        Transfers the given _amount of the given ERC20 token from self
         to the recipient. Can only be called by the owner.
     """
     assert msg.sender == self.owner, "not permitted"
-    token_balance: uint256 = ERC20(_token).balanceOf(self)
-    if token_balance != 0:
-        assert ERC20(_token).transfer(_recipient, token_balance), "token transfer failed"
+    if _amount != 0:
+        assert ERC20(_token).transfer(_recipient, _amount), "token transfer failed"

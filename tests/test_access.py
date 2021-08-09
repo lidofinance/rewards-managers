@@ -47,11 +47,19 @@ def test_owner_can_set_rewards_contract_to_zero_address(rewards_manager, ape):
 
 def test_stranger_can_not_recover_erc20(rewards_manager, ldo_token, stranger):
     with reverts("not permitted"):
-        rewards_manager.recover_erc20(ldo_token, {"from": stranger})
+        rewards_manager.recover_erc20(ldo_token, 0, {"from": stranger})
 
 
-def test_owner_recovers_erc20(rewards_manager, ldo_token, ape):
-    rewards_manager.recover_erc20(ldo_token, {"from": ape})
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_owner_recovers_erc20(rewards_manager, ldo_token, ape, dao_agent):
+    assert ldo_token.balanceOf(rewards_manager) == 0
+
+    rewards_amount = Wei("1 ether")
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+    rewards_manager.recover_erc20(ldo_token, rewards_amount // 2, {"from": ape})
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount // 2
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
