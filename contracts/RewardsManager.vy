@@ -37,11 +37,15 @@ def set_rewards_contract(_rewards_contract: address):
     assert msg.sender == self.owner, "not permitted"
     self.rewards_contract = _rewards_contract
 
+@view
+@internal
+def _period_finish(rewards_contract: address) -> uint256:
+    return StakingRewards(rewards_contract).periodFinish()
 
 @view
 @internal
 def _is_rewards_period_finished(rewards_contract: address) -> bool:
-    return block.timestamp >= StakingRewards(rewards_contract).periodFinish()
+    return block.timestamp >= self._period_finish(rewards_contract)
 
 
 @view
@@ -52,6 +56,11 @@ def is_rewards_period_finished() -> bool:
     """
     return self._is_rewards_period_finished(self.rewards_contract)
 
+
+@view
+@external
+def period_finish() -> uint256:
+    return self._period_finish(self.rewards_contract)
 
 @external
 def start_next_rewards_period():

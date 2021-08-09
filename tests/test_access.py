@@ -1,5 +1,5 @@
 import pytest
-from brownie import reverts, Wei, ZERO_ADDRESS
+from brownie import chain, reverts, Wei, ZERO_ADDRESS
 from brownie.network.state import Chain
 from scripts.deploy import deploy_manager_and_rewards
 from utils.config import initial_rewards_duration_sec
@@ -57,6 +57,16 @@ def test_owner_recovers_erc20(rewards_manager, ldo_token, ape):
 @pytest.mark.usefixtures("set_rewards_contract")
 def test_stranger_can_check_is_rewards_period_finished(rewards_manager, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+
+
+@pytest.mark.usefixtures("set_rewards_contract")
+@pytest.mark.usefixtures("notify_reward_amount_sushi")
+def test_stranger_can_check_rewards_period(rewards_manager, staking_rewards_sushi):
+    assert rewards_manager.period_finish() == staking_rewards_sushi.periodFinish()
+    assert (
+        rewards_manager.period_finish()
+        == chain[-2].timestamp + initial_rewards_duration_sec
+    )
 
 
 def test_stranger_can_not_start_next_rewards_period_without_rewards_contract_set(
