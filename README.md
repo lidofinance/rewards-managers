@@ -68,7 +68,11 @@ To make `StakingRewardsSushi` rewarder compatible with SushiSwap's default UI, t
 
 ### RewardsManager.vy
 
-This contract simplifies operations with reward periods of StakingRewards contracts for the DAO. No changes have been made compared to the original repository.
+This contract simplifies operations with reward periods of StakingRewards contracts for the DAO.
+Compared to the original repository next changes were applied:
+
+- Was added method `period_finish()` which returns end of the rewards period of `StakingRewards` contract. This method will help retrieve all info required to start a new reward period directly from the manager contract.
+- Method `recover_erc20()` now accepts `_amount` as the second argument to allow recovery of the exact amount of tokens instead of the whole balance.
 
 ## Project Setup
 
