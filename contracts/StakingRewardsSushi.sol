@@ -67,6 +67,21 @@ contract StakingRewardsSushi is StakingRewards, IRewarder {
         }
     }
 
+    /// @notice Returns current reward per second value
+    /// @dev This method is required to make Rewarder compatible with SushiSwap's UI
+    function rewardPerSecond() external view returns (uint256) {
+        if (block.timestamp > periodFinish) {
+            return 0;
+        }
+        return rewardRate;
+    }
+
+    /// @notice Returns address of reward token
+    /// @dev This method is required to make Rewarder compatible with SushiSwap's UI
+    function rewardToken() external view returns (IERC20) {
+        return rewardsToken;
+    }
+
     /// @notice Pays reward to user and updates balance of user when called by MasterChefV2 contract
     /// with correct pid value
     /// @dev On every call of this method StakingRewardsSushi will transfer earned tokens of user

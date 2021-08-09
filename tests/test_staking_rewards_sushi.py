@@ -126,6 +126,24 @@ def test_pending_tokens(
     assert pending_amounts[0] == staking_rewards_sushi.earned(ape)
 
 
+@pytest.mark.usefixtures("notify_reward_amount_sushi")
+def test_reward_per_second(staking_rewards_sushi):
+    "Must return current rewardRate value if periodFinish not passed and 0 in other cases"
+    assert staking_rewards_sushi.periodFinish() > chain[-1].timestamp
+    assert staking_rewards_sushi.rewardPerSecond() == staking_rewards_sushi.rewardRate()
+
+    chain.sleep(initial_rewards_duration_sec + 1)
+    chain.mine()
+    assert staking_rewards_sushi.periodFinish() < chain[-1].timestamp
+    assert staking_rewards_sushi.rewardPerSecond() == 0
+
+
+@pytest.mark.usefixtures("notify_reward_amount_sushi")
+def test_reward_token(staking_rewards_sushi, ldo_token):
+    assert staking_rewards_sushi.rewardToken() == staking_rewards_sushi.rewardsToken()
+    assert staking_rewards_sushi.rewardToken() == ldo_token
+
+
 def test_update_period_finish_called_by_stranger(stranger, staking_rewards_sushi):
     new_period_finish = chain[-1].timestamp + 7 * 24 * 60 * 60
     with reverts("Only the contract owner may perform this action"):
