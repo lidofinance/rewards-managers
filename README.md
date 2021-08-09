@@ -1,5 +1,12 @@
 # LIDO / 1inch co-incentivization flow
 
+## Components versions
+- solc: 0.6.12
+- truffle: 5.4.3
+- ganache-core: 2.13.0
+- solidity-coverage: 0.7.16
+
+
 ## Prerequisites
 ```bash
 npm install -g ganache-cli
@@ -49,4 +56,10 @@ It is better to restart Ganache CLI after test runs to have clean environment.
 To flatten Solidity sources [solc-typed-ast](https://github.com/ConsenSys/solc-typed-ast/) may be used in following way:
 ```bash
 sol-ast-compile path/to/file.sol --source
+```
+
+## Test coverage
+To calculate tests run:
+```bash
+truffle run coverage
 ```
