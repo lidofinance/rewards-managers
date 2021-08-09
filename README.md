@@ -47,7 +47,7 @@ interface IRewarder {
 ```
 
 Method `pendingTokens` is used by SushiSwap's UI and must return a tuple with a list of rewardTokens distributed by the rewarder and a list of amounts of tokens gained by the user.
-In current implementation `SushiStakingRewards` distributes only one `rewardsToken`, and returns next value from `pendingTokens` method: `([rewardsToken], [earned(msg.sender)])`
+In current implementation `SushiStakingRewards` distributes only one `rewardsToken`, and returns next value from `pendingTokens` method: `([rewardsToken], [earned(msg.sender)])` if was passed correct `pid` value. Returns tuple with empty arrays in other cases.
 
 Method `onSushiReward` is executed on the distribution of rewards with the user and the amount of Sushi given out being specified, or on any change of user's balance of `stakingToken`. In the current implementation, this method validates that method has been called by MasterChefV2 contract with correct pid value, calls method `_payReward(user, recipient)` and updates user balance in `_balances` mapping.
 
@@ -60,6 +60,11 @@ function totalSupply() public view returns (uint256) {
 ```
 
 where `MASTERCHEF_V2` is the address of MasterChefV2 contract.
+
+To make `StakingRewardsSushi` rewarder compatible with SushiSwap's default UI, the next view methods were added:
+
+- `rewardPerSecond()` - returns `rewardRate` value from base `StakingRewards` contract if current reward period hasn't finished yet (current block timestamp is less than `periodFinish` value) and 0 in other cases.
+- `rewardToken()` - returns value of `rewardsToken` variable from base `StringRewards` contract
 
 ### RewardsManager.vy
 
