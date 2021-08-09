@@ -6,7 +6,6 @@ pragma solidity ^0.6.12;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/Pausable.sol";
 
 
 /// @title FarmingRewards interface
@@ -19,7 +18,7 @@ interface IFarmingRewards {
 
 
 /// @title Lido-1inch RewardsManager
-contract RewardsManager is Ownable, Pausable {
+contract RewardsManager is Ownable {
 
     /// @notice ERC20 tokens successfully recovered
     /// @param token Token contract address
@@ -59,13 +58,13 @@ contract RewardsManager is Ownable, Pausable {
     }
 
     /// @notice Checks if reward period is finished
-    /// @returns True if finished, false if not
+    /// @return True if finished, false if not
     function is_reward_period_finished() public view returns (bool) {
         return block.timestamp >= _getPeriodFinish();
     }
 
     /// @notice Returns reward period finish date
-    /// @returns Timestamp of reward period finish date
+    /// @return Timestamp of reward period finish date
     function out_of_funding_date() public view returns (uint) {
         return _getPeriodFinish();
     }
@@ -91,7 +90,7 @@ contract RewardsManager is Ownable, Pausable {
     }
 
     /// @notice Gets reward period finish date from FarmingRewards contract
-    /// @returns Timestamp of reward period finish date    
+    /// @return Timestamp of reward period finish date    
     function _getPeriodFinish() private view returns (uint) {
         (,,,,uint _periodFinish,,,) = IFarmingRewards(rewardsContract).tokenRewards(giftIndex);
         return _periodFinish;
