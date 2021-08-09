@@ -20,12 +20,38 @@ async function deployRewardsManager(owner, giftIndex, rewards, token) {
     return rewardsManager;
 }
 
-async function startNextRewardPeriod(rewardsManager, token, tokenOwner, tokenAmount) {
+async function startNextRewardPeriod(rewardsManager, token, tokenOwner, tokenAmount, rewards) {
+    const rmBalanceBefore = (await token.balanceOf(rewardsManager.address)).toNumber();
+
+    assert.equal(rmBalanceBefore, 0);
+
+    /**
+     * Tokens are transferred to RewardManager first.
+     * For simplicity, just send LDO tokens instead of using full Aragon Voting flow
+     * (that is considered "just working").
+     */
     await token.transfer(rewardsManager.address, tokenAmount, { from: tokenOwner });
 
-    assert.equal((await token.balanceOf(rewardsManager.address)).toNumber(), tokenAmount);
+    const rmBalanceAfterTransfer = (await token.balanceOf(rewardsManager.address)).toNumber();
 
+    assert.equal(rmBalanceAfterTransfer, tokenAmount);
+
+    /**
+     * Transfers tokens to FarmingRewards and triggering new reward period.
+     */
     await rewardsManager.start_next_rewards_period();
+
+    const rmBalanceAfterPeriodStart = (await token.balanceOf(rewardsManager.address)).toNumber();
+    const rBalanceAfterPeriodStart = (await token.balanceOf(rewards.address)).toNumber();
+
+    /**
+     * RewardManager transfered all of the tokens to FarmingRewards, so:
+     * - balance decreased for RewardManager.
+     * - balance increased for FarmingRewards.
+     * - balance of FarmingRewards is amount of tokens.
+     */
+    assert.equal(rmBalanceAfterPeriodStart, 0);
+    assert.equal(rBalanceAfterPeriodStart, tokenAmount);
 }
 
 async function deployPoolAndRewards(owner, token0, token1, giftToken, distribution, duration, scale) {
@@ -194,10 +220,9 @@ describe('Flow', () => {
 
         /**
          * Actions that should be triggered by Aragon voting.
-         * For simplicity, just send LDO tokens instead of using full Aragon Voting flow
-         * (that is considered "just working").
+         * Particularly, starting next reward period and dispatching reward tokens.
          */
-        await startNextRewardPeriod(rewardManager, ldoToken, ldoOwner, 200000);
+        await startNextRewardPeriod(rewardManager, ldoToken, ldoOwner, 200000, rewardsContract);
 
         /**
          * Give user 2K DAI and 2K stETH tokens.
@@ -226,7 +251,7 @@ describe('Flow', () => {
         await exitFromRewards(liquidityProvider, stEthDaiPool, rewardsContract);
 
         /**
-         * User withdraws LP tokens from liquidity pool
+         * User withdraws LP tokens from liquidity pool.
          */
         await withdrawLiquidityFromPool(liquidityProvider, stEthDaiPool, stEthToken, daiToken);
     });
