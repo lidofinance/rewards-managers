@@ -55,14 +55,16 @@ contract StakingRewardsSushi is StakingRewards, IRewarder {
 
     /// @notice Returns list of rewardTokens and list of corresponding earned rewards of user
     function pendingTokens(
-        uint256,
+        uint256 pid,
         address user,
         uint256
     ) external view returns (IERC20[] memory _rewardTokens, uint256[] memory _rewardAmounts) {
-        _rewardTokens = new IERC20[](1);
-        _rewardTokens[0] = rewardsToken;
-        _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = earned(user);
+        if (_isCorrectPoolId(pid)) {
+            _rewardTokens = new IERC20[](1);
+            _rewardTokens[0] = rewardsToken;
+            _rewardAmounts = new uint256[](1);
+            _rewardAmounts[0] = earned(user);
+        }
     }
 
     /// @notice Pays reward to user and updates balance of user when called by MasterChefV2 contract
@@ -76,9 +78,13 @@ contract StakingRewardsSushi is StakingRewards, IRewarder {
         uint256,
         uint256 newLpAmount
     ) external onlyMCV2 {
-        require(IMasterChefV2(MASTERCHEF_V2).lpToken(pid) == stakingToken, "Wrong PID.");
+        require(_isCorrectPoolId(pid), "Wrong PID.");
         _payReward(user, recipient);
         _balances[user] = newLpAmount;
+    }
+
+    function _isCorrectPoolId(uint256 pid) private view returns (bool) {
+        return IMasterChefV2(MASTERCHEF_V2).lpToken(pid) == stakingToken;
     }
 
     modifier onlyMCV2() {
