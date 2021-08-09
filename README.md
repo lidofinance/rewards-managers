@@ -38,7 +38,7 @@ npm install
 Key points:
 - Flow simulation is in [`test/flow.spec.js`](https://github.com/maddevsio/lido/blob/main/test/flow.spec.js) file.
 - Contract sources are in [`contracts`](https://github.com/maddevsio/lido/tree/main/contracts) directory:
-  - [`FarmingRewards.sol`](https://github.com/maddevsio/lido/blob/main/contracts/FarmingRewards.sol) - flattened version of 1inch [FarmingRewards](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol) and [MooniswapFactoryGovernance](https://github.com/1inch/liquidity-protocol/blob/master/contracts/governance/MooniswapFactoryGovernance.sol).
+  - [`Vendor.sol`](https://github.com/maddevsio/lido/blob/main/contracts/Vendor.sol) - flattened version of 1inch [FarmingRewards](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol) and [MooniswapFactoryGovernance](https://github.com/1inch/liquidity-protocol/blob/master/contracts/governance/MooniswapFactoryGovernance.sol).
   - [`Mocks.sol`](https://github.com/maddevsio/lido/blob/main/contracts/Mocks.sol) - custom contracts, stubs, mocks and whatever else, that is created by us to support simulation. Not intended to be used in production.
   - [`RewardsManager.sol`](https://github.com/maddevsio/lido/blob/main/contracts/RewardsManager.sol) - reward manager implementation that is intended to deploy and be used for the integration.
 
