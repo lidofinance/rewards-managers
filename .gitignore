@@ -1,2 +1,4 @@
-build
-node_modules
+build/
+coverage/
+node_modules/
+coverage.json

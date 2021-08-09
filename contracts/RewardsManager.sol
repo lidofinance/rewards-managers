@@ -3,30 +3,25 @@
 pragma solidity ^0.6.12;
 
 /// Using OpenZeppelin 3.2.0
-
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 
 /// @title FarmingRewards interface
 /// @dev Interface for necessary methods of FarmingRewards contract
 interface IFarmingRewards {
-
     function notifyRewardAmount(uint i, uint256 reward) external;
     function tokenRewards(uint i) external view returns(address, uint256, uint256, address, uint256, uint256, uint256, uint256);
 }
 
-
 /// @title Lido-1inch RewardsManager
 contract RewardsManager is Ownable {
-
     /// @notice ERC20 tokens successfully recovered
     /// @param token Token contract address
     /// @param amount Amount of tokens recovered
     /// @param owner New token owner's address
     event ERC20TokenRecovered(address token, uint amount, address owner);
 
-	/// @notice Gift identifier
+    /// @notice Gift identifier
     uint public giftIndex;
     /// @notice FarmingRewards contract address
     address public rewardsContract;
@@ -95,7 +90,4 @@ contract RewardsManager is Ownable {
         (,,,,uint _periodFinish,,,) = IFarmingRewards(rewardsContract).tokenRewards(giftIndex);
         return _periodFinish;
     }
-
 }
-
-

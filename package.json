@@ -7,6 +7,7 @@
         "compile": "npm run clean && truffle compile",
         "migrate": "truffle migrate",
         "ganache": "ganache-cli -l 9000000000000000 -g 0 --allowUnlimitedContractSize",
+        "coverage": "truffle run coverage",
         "test": "truffle test"
     },
     "author": "Folks from MadDevs",
