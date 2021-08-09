@@ -7,3 +7,9 @@ contract StubERC20 is ERC20 {
         _mint(msg.sender, totalSupply_);
     }
 }
+
+contract Dummy {
+    function getAddress() public returns (address) {
+        return address(this);
+    }
+}
