@@ -2,6 +2,7 @@ const StubERC20 = artifacts.require("StubERC20");
 const Mooniswap = artifacts.require("Mooniswap");
 const MooniswapFactoryGovernance = artifacts.require("MooniswapFactoryGovernance");
 const FarmingRewards = artifacts.require("FarmingRewards");
+const RewardsManager = artifacts.require("RewardsManager");
 
 async function deployToken(name, sym, supply, owner) {
     const token = await StubERC20.new(name, sym, supply, { from: owner });
@@ -9,6 +10,25 @@ async function deployToken(name, sym, supply, owner) {
     assert.equal((await token.balanceOf(owner)).toNumber(), supply);
 
     return token;
+}
+
+async function deployRewardsManager(rewardsOwner, giftIndex, rewards, token) {
+    const rewardsManager = await RewardsManager.new(giftIndex, rewards.address, { from: rewardsOwner });
+
+    await rewardsManager.setTokenContract(token.address, { from: rewardsOwner });
+
+    return rewardsManager;
+}
+
+async function startNextRewardPeriod(rewardsManagerOwner, rewardsManager, token, tokenOwner, tokenAmount) {
+    /**
+     * Aragon should do this
+     */
+    await token.transfer(rewardsManager.address, tokenAmount, { from: tokenOwner });
+
+    assert.equal((await token.balanceOf(rewardsManager.address)).toNumber(), tokenAmount);
+
+    await rewardsManager.start_next_rewards_period({ from: rewardsManagerOwner });
 }
 
 async function deployPoolAndRewards(owner, token0, token1, giftToken, distribution, duration, scale) {
@@ -150,7 +170,7 @@ describe('Flow', () => {
     it('Simulate', async () => {
         const accounts = await web3.eth.getAccounts();
 
-        const [ldoOwner, inchOwner, daiOwner, stEthOwner, stEthDaiPoolOwner, liquidityProvider] = accounts;
+        const [ldoOwner, inchOwner, daiOwner, stEthOwner, stEthDaiPoolOwner, rewardManagerOwner, liquidityProvider] = accounts;
 
         const ldoToken = await deployToken("Lido DAO Token", "LDO", 250000, ldoOwner);
         const inchToken = await deployToken("1INCH Token", "INCH", 250000, inchOwner);
@@ -166,14 +186,16 @@ describe('Flow', () => {
             100     // Not sure about this
         );
 
+        const rewardManager = await deployRewardsManager(rewardManagerOwner, 1, rewardsContract, ldoToken);
+
         /**
          * Not sure about last two params:
          * - Here may be dependence on `block.timestamp` for `duration`.
          * - Need to figure out how `scale` is actually used in computations.
-         *
-         * Also here may (or should) be a `RewardManager` instead of LDO token.
          */
-        await rewardsContract.addGift(ldoToken.address, 1000, ldoOwner, 100, { from: stEthDaiPoolOwner });
+        await rewardsContract.addGift(rewardManager.address, 1000, rewardManager.address, 100, { from: stEthDaiPoolOwner });
+
+        // await startNextRewardPeriod(rewardManagerOwner, rewardManager, ldoToken, ldoOwner, 200000);
 
         /**
          * Give user 2K DAI and 2K stETH tokens.
