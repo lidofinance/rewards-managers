@@ -9,7 +9,7 @@ contract StubERC20 is ERC20 {
 }
 
 contract Dummy {
-    function getAddress() public returns (address) {
+    function getAddress() public view returns (address) {
         return address(this);
     }
 }
