@@ -13,7 +13,7 @@ contract('RewardsManager', async (accounts) => {
 	before(async function () {
     	token = await StubERC20.new("Lido DAO Token", "LDO", 250000, { from: contractsOwner });
 		dummy = await DummyContract.new({ from: contractsOwner });
-    	rewardsManager = await RewardsManager.new(1, dummy.address, { from: contractsOwner });
+    	rewardsManager = await RewardsManager.new(1, dummy.address, token.address, { from: contractsOwner });
 	});
 
     it('Owner can set RewordsContract address', async function () {

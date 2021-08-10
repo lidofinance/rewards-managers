@@ -32,10 +32,11 @@ contract RewardsManager is Ownable {
     /// @notice Constructor
     /// @param _giftIndex Gift identifier
     /// @param _rewardsContract FarmingRewards contract address
-    constructor(uint _giftIndex, address _rewardsContract) public {
+    constructor(uint _giftIndex, address _rewardsContract, address _rewardToken) public {
         require(_rewardsContract != address(0));
         giftIndex = _giftIndex;
         rewardsContract = _rewardsContract;
+        if (_rewardToken != address(0)) rewardToken = _rewardToken;
     }
 
     /// @notice Sets FarmingRewards contract address
