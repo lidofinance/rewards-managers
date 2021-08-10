@@ -5,10 +5,10 @@ from utils.config import sushi_master_chef_v2, initial_rewards_duration_sec
 DEPOSIT_AMOUNT = 1000 * 10 ** 18
 
 
-def test_deploy(ape, accounts, ldo_token, lp_token_sushi):
+def test_deploy(ape, accounts, ldo_token, lp_token_sushi_mock):
     owner = accounts[2]
     rewards_distribution = accounts[3]
-    staking_token = lp_token_sushi
+    staking_token = lp_token_sushi_mock
     rewards_token = ldo_token
 
     contract = StakingRewardsSushi.deploy(
@@ -30,18 +30,20 @@ def test_deploy(ape, accounts, ldo_token, lp_token_sushi):
     assert contract.rewardPerTokenStored() == 0
 
 
-def test_total_supply(ape, staking_rewards_sushi, lp_token_sushi, master_chef_v2):
+def test_total_supply(ape, staking_rewards_sushi, lp_token_sushi_mock, master_chef_v2):
     "Must return lpToken balance of MasterChefV2 contract"
-    assert lp_token_sushi.balanceOf(ape) >= DEPOSIT_AMOUNT
-    assert lp_token_sushi.balanceOf(master_chef_v2) == 0
+    assert lp_token_sushi_mock.balanceOf(ape) >= DEPOSIT_AMOUNT
+    assert lp_token_sushi_mock.balanceOf(master_chef_v2) == 0
     assert (
-        lp_token_sushi.balanceOf(master_chef_v2) == staking_rewards_sushi.totalSupply()
+        lp_token_sushi_mock.balanceOf(master_chef_v2)
+        == staking_rewards_sushi.totalSupply()
     )
-    lp_token_sushi.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    lp_token_sushi_mock.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
 
-    assert lp_token_sushi.balanceOf(master_chef_v2) == DEPOSIT_AMOUNT
+    assert lp_token_sushi_mock.balanceOf(master_chef_v2) == DEPOSIT_AMOUNT
     assert (
-        lp_token_sushi.balanceOf(master_chef_v2) == staking_rewards_sushi.totalSupply()
+        lp_token_sushi_mock.balanceOf(master_chef_v2)
+        == staking_rewards_sushi.totalSupply()
     )
 
 
@@ -74,7 +76,7 @@ def test_on_sushi_reward_updates_balance(
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_pending_tokens_called_with_wrong_pid(
-    ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi
+    ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi_mock
 ):
     "Must return tuple with empty arrays"
     pid = master_chef_v2.poolLength() - 1
@@ -86,7 +88,7 @@ def test_pending_tokens_called_with_wrong_pid(
     )
 
     # simulate deposit to make rewardPerToken > 0
-    lp_token_sushi.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    lp_token_sushi_mock.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     #  wait some time till reward will become greater than 0
     chain.sleep(60)
     chain.mine()
@@ -102,7 +104,7 @@ def test_pending_tokens_called_with_wrong_pid(
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_pending_tokens(
-    ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi, ldo_token
+    ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi_mock, ldo_token
 ):
     "Must return [rewardsToken] and [earned(user)] for pendingTokens and pendingAmounts values correspondingly"
     pid = master_chef_v2.poolLength() - 1
@@ -111,7 +113,7 @@ def test_pending_tokens(
     )
 
     # simulate deposit to make rewardPerToken > 0
-    lp_token_sushi.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    lp_token_sushi_mock.transfer(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     #  wait some time till reward will become greater than 0
     chain.sleep(60)
     chain.mine()

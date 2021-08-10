@@ -9,12 +9,36 @@ from utils.config import (
     lido_dao_token_manager_address,
     sushi_master_chef_v2,
     initial_rewards_duration_sec,
+    lp_token_address,
+    sushiswap_router_address,
+    wsteth_address,
+    dai_address,
 )
 
 
+@pytest.fixture
+def wsteth_token(interface):
+    return interface.ERC20(wsteth_address)
+
+
+@pytest.fixture
+def dai_token(interface):
+    return interface.ERC20(dai_address)
+
+
 @pytest.fixture(scope="function")
-def lp_token_sushi(ape):
+def lp_token_sushi(interface):
+    return interface.UniswapV2Pair(lp_token_address)
+
+
+@pytest.fixture(scope="function")
+def lp_token_sushi_mock(ape):
     return DropToken.deploy("SUSHI LP", "SLP", 18, 1000000 * 10 ** 18, {"from": ape})
+
+
+@pytest.fixture
+def sushiswap_router(interface):
+    return interface.UniswapV2Router02(sushiswap_router_address)
 
 
 @pytest.fixture(scope="function")
@@ -31,7 +55,7 @@ def master_chef_v2_owner(accounts):
 def staking_rewards_sushi(
     ape,
     rewards_manager,
-    lp_token_sushi,
+    lp_token_sushi_mock,
     ldo_token,
     master_chef_v2,
     master_chef_v2_owner,
@@ -40,13 +64,13 @@ def staking_rewards_sushi(
         ape,
         rewards_manager,
         ldo_token,
-        lp_token_sushi,
+        lp_token_sushi_mock,
         initial_rewards_duration_sec,
         {"from": ape},
     )
     # create pool in master chef v2 for new rewarder
     master_chef_v2.add(
-        100, lp_token_sushi, staking_rewards_sushi, {"from": master_chef_v2_owner}
+        100, lp_token_sushi_mock, staking_rewards_sushi, {"from": master_chef_v2_owner}
     )
     return staking_rewards_sushi
 
@@ -56,8 +80,13 @@ def ape(accounts):
     return accounts[0]
 
 
-@pytest.fixture(scope="module")
-def stranger(accounts):
+@pytest.fixture(scope="function")
+def stranger(accounts, ldo_token, dao_agent):
+    stranger_account = accounts[9]
+    balance = ldo_token.balanceOf(stranger_account)
+    # Reset balance of stranger if he has some LDO from prev tests
+    if balance > 0:
+        ldo_token.transfer(dao_agent, balance, {"from": stranger_account})
     return accounts[9]
 
 

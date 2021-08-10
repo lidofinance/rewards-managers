@@ -28,6 +28,9 @@ def test_happy_path(
     lp_token_sushi,
     master_chef_v2,
     master_chef_v2_owner,
+    sushiswap_router,
+    wsteth_token,
+    dai_token,
 ):
     chain = Chain()
     rewards_period = ONE_WEEK
@@ -67,15 +70,70 @@ def test_happy_path(
     rewards_manager.start_next_rewards_period({"from": stranger})
     assert rewards_manager.is_rewards_period_finished() == False
 
-    # Transfer lpTokens to test users
     user_a, user_b = accounts[2], accounts[3]
-    user_a_stake, user_b_stake = 1000 * 10 ** 18, 2000 * 10 ** 18
 
-    lp_token_sushi.transfer(user_a, user_a_stake, {"from": ape})
-    lp_token_sushi.transfer(user_b, user_b_stake, {"from": ape})
+    # user A adds liquidity to the pool to gain lpTokens:
+    # transfer ETH to wstETH token to receive wstETH
+    user_a.transfer(wsteth_token, "3 ether")
 
-    assert lp_token_sushi.balanceOf(user_a) == user_a_stake
-    assert lp_token_sushi.balanceOf(user_b) == user_b_stake
+    # Exchange ETH to DAI token to receive DAI
+    sushiswap_router.swapExactETHForTokens(
+        Wei("100 ether"),
+        [
+            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "0x6b175474e89094c44da98b954eedeac495271d0f",
+        ],  # weth9
+        user_a,
+        10000000000,
+        {"from": user_a, "value": Wei("3 ether")},
+    )
+    wsteth_token.approve(sushiswap_router, Wei("100 ether"), {"from": user_a})
+    dai_token.approve(sushiswap_router, Wei("10000 ether"), {"from": user_a})
+
+    sushiswap_router.addLiquidity(
+        wsteth_token,
+        dai_token,
+        Wei("1 ether"),
+        Wei("3000 ether"),
+        Wei("0.9 ether"),
+        Wei("2900 ether"),
+        user_a,
+        10000000000,
+        {"from": user_a},
+    )
+    user_a_stake = lp_token_sushi.balanceOf(user_a)
+
+    # user B adds liquidity to the pool to gain lpTokens:
+
+    # transfer ETH to wstETH token to receive wstETH
+    user_b.transfer(wsteth_token, "3 ether")
+
+    # Exchange ETH to DAI token to receive DAI
+    sushiswap_router.swapExactETHForTokens(
+        Wei("100 ether"),
+        [
+            "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+            "0x6b175474e89094c44da98b954eedeac495271d0f",
+        ],  # weth9
+        user_b,
+        10000000000,
+        {"from": user_b, "value": Wei("3 ether")},
+    )
+    wsteth_token.approve(sushiswap_router, Wei("100 ether"), {"from": user_b})
+    dai_token.approve(sushiswap_router, Wei("10000 ether"), {"from": user_b})
+
+    sushiswap_router.addLiquidity(
+        wsteth_token,
+        dai_token,
+        Wei("2 ether"),
+        Wei("6000 ether"),
+        Wei("1.9 ether"),
+        Wei("5900 ether"),
+        user_b,
+        10000000000,
+        {"from": user_b},
+    )
+    user_b_stake = lp_token_sushi.balanceOf(user_b)
 
     # Deposit tokens to the pool
     lp_token_sushi.approve(master_chef_v2, user_a_stake, {"from": user_a})

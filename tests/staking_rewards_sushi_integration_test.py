@@ -8,11 +8,13 @@ DEPOSIT_AMOUNT = 1000 * 10 ** 18
 
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
-def test_deposit(ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi, ldo_token):
+def test_deposit(
+    ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi_mock, ldo_token
+):
     pid = master_chef_v2.poolLength() - 1
 
-    assert lp_token_sushi.balanceOf(ape) > DEPOSIT_AMOUNT
-    lp_token_sushi.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    assert lp_token_sushi_mock.balanceOf(ape) > DEPOSIT_AMOUNT
+    lp_token_sushi_mock.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     tx = master_chef_v2.deposit(pid, DEPOSIT_AMOUNT, ape, {"from": ape})
 
     # validate that zero reward wasn't paid
@@ -33,13 +35,12 @@ def test_deposit(ape, master_chef_v2, staking_rewards_sushi, lp_token_sushi, ldo
     earned = staking_rewards_sushi.earned(ape)
     expected_profit = staking_rewards_sushi.rewardRate() * TEN_DAYS
 
-    print(earned, expected_profit, staking_rewards_sushi.rewardRate())
     assert abs(earned - expected_profit) < 2 * staking_rewards_sushi.rewardRate()
 
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_withdraw(
-    ape, stranger, master_chef_v2, staking_rewards_sushi, lp_token_sushi, ldo_token
+    ape, stranger, master_chef_v2, staking_rewards_sushi, lp_token_sushi_mock, ldo_token
 ):
     "After withdraw user must receive reward for period from deposit to withdraw"
     "Current user rewards must be zeroing"
@@ -48,8 +49,8 @@ def test_withdraw(
 
     # do deposit
     pid = master_chef_v2.poolLength() - 1
-    assert lp_token_sushi.balanceOf(ape) > DEPOSIT_AMOUNT
-    lp_token_sushi.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    assert lp_token_sushi_mock.balanceOf(ape) > DEPOSIT_AMOUNT
+    lp_token_sushi_mock.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     master_chef_v2.deposit(pid, DEPOSIT_AMOUNT, ape, {"from": ape})
     assert staking_rewards_sushi.balanceOf(ape) == DEPOSIT_AMOUNT
 
@@ -102,15 +103,15 @@ def test_harvest_no_rewards(
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_harvest(
-    ape, stranger, master_chef_v2, staking_rewards_sushi, lp_token_sushi, ldo_token
+    ape, stranger, master_chef_v2, staking_rewards_sushi, lp_token_sushi_mock, ldo_token
 ):
     # test some preconditions
     assert ldo_token.balanceOf(stranger) == 0
 
     # do deposit
     pid = master_chef_v2.poolLength() - 1
-    assert lp_token_sushi.balanceOf(ape) > DEPOSIT_AMOUNT
-    lp_token_sushi.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    assert lp_token_sushi_mock.balanceOf(ape) > DEPOSIT_AMOUNT
+    lp_token_sushi_mock.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     master_chef_v2.deposit(pid, DEPOSIT_AMOUNT, ape, {"from": ape})
     assert staking_rewards_sushi.balanceOf(ape) == DEPOSIT_AMOUNT
 
@@ -140,15 +141,15 @@ def test_harvest(
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_withdraw_and_harvest(
-    ape, stranger, ldo_token, master_chef_v2, lp_token_sushi, staking_rewards_sushi
+    ape, stranger, ldo_token, master_chef_v2, lp_token_sushi_mock, staking_rewards_sushi
 ):
     # test some preconditions
     assert ldo_token.balanceOf(stranger) == 0
 
     # do deposit
     pid = master_chef_v2.poolLength() - 1
-    assert lp_token_sushi.balanceOf(ape) > DEPOSIT_AMOUNT
-    lp_token_sushi.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    assert lp_token_sushi_mock.balanceOf(ape) > DEPOSIT_AMOUNT
+    lp_token_sushi_mock.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     master_chef_v2.deposit(pid, DEPOSIT_AMOUNT, ape, {"from": ape})
     assert staking_rewards_sushi.balanceOf(ape) == DEPOSIT_AMOUNT
 
@@ -209,15 +210,15 @@ def test_withdraw_and_harvest_empty_balance(
 
 @pytest.mark.usefixtures("notify_reward_amount_sushi")
 def test_emergency_withdraw(
-    ape, stranger, ldo_token, lp_token_sushi, master_chef_v2, staking_rewards_sushi
+    ape, stranger, ldo_token, lp_token_sushi_mock, master_chef_v2, staking_rewards_sushi
 ):
     # test some preconditions
     assert ldo_token.balanceOf(stranger) == 0
 
     # do deposit
     pid = master_chef_v2.poolLength() - 1
-    assert lp_token_sushi.balanceOf(ape) > DEPOSIT_AMOUNT
-    lp_token_sushi.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
+    assert lp_token_sushi_mock.balanceOf(ape) > DEPOSIT_AMOUNT
+    lp_token_sushi_mock.approve(master_chef_v2, DEPOSIT_AMOUNT, {"from": ape})
     master_chef_v2.deposit(pid, DEPOSIT_AMOUNT, ape, {"from": ape})
     assert staking_rewards_sushi.balanceOf(ape) == DEPOSIT_AMOUNT
 
