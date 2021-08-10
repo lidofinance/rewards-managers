@@ -8,16 +8,16 @@ ONE_WEEK = 60 * 60 * 24 * 7
 # 2. Deploy RewardManager and connect it to Rewarder
 # 3. DAO transfers LDO to RewardsManager contract
 # 4. Someone starts new reward period
-# 5. Transfer lpTokens to test users A and B
-# 5. Users A and B deposit their lp tokens into the created pool via MasterChefV2 contract
-# 6. Wait half of the reward period and harvest rewards by test users
-# 7. Harvest reward again when reward period passed
-# 8. DAO transfers LDO to RewardsManager contract to start second reward period
-# 9. Stranger starts new reward period
-# 10. User A withdraws money and harvest at the middle of second reward period
-# 11. Wait till the end of the second reward period
-# 12. User B harvest money for passed period
-# 13. User A has no rewards because he withdrawn his tokens earlier
+# 5. Users A and B buy wstETH tokens and exchange ETH on DAI to become lp providers
+# 6. Users A and B deposit their lp tokens into the created pool via MasterChefV2 contract
+# 7. Wait half of the reward period and harvest rewards by test users
+# 8. Harvest reward again when reward period passed
+# 9. DAO transfers LDO to RewardsManager contract to start second reward period
+# 10. Stranger starts new reward period
+# 11. User A withdraws money and harvest at the middle of second reward period
+# 12. Wait till the end of the second reward period
+# 13. User B harvest money for passed period
+# 14. User A has no rewards because he withdrawn his tokens earlier
 def test_happy_path(
     accounts,
     ldo_token,
