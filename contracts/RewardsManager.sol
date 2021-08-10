@@ -39,17 +39,13 @@ contract RewardsManager is Ownable {
     }
 
     /// @notice Sets FarmingRewards contract address
+    /// @dev This method is to ensure that RewardsManager is not depending on deployment order. 
+    /// If deployment scheme is known and FarmingRewards is deployed before RewardsManager, 
+    /// it can be inlined into a constructor.
     /// @param _rewardsContract FarmingRewards contract address
     function setRewardsContract(address _rewardsContract) public onlyOwner {
         require(_rewardsContract != address(0));
         rewardsContract = _rewardsContract;
-    }
-
-    /// @notice Sets reward token address
-    /// @param _tokenAddress Reward token address
-    function setTokenContract(address _tokenAddress) public onlyOwner {
-        require(_tokenAddress != address(0));
-        rewardToken = _tokenAddress;
     }
 
     /// @notice Checks if reward period is finished
