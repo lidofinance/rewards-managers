@@ -9,7 +9,20 @@ contract StubERC20 is ERC20 {
 }
 
 contract Dummy {
-    function getAddress() public view returns (address) {
-        return address(this);
+
+    uint private _tokenRewards;
+    uint private _giftIndex;
+
+    constructor(uint tokenRewards_, uint giftIndex_) public {
+        _tokenRewards = tokenRewards_;
+        _giftIndex = giftIndex_;
+    }
+
+    function notifyRewardAmount(uint i, uint256 reward) public {
+
+    }
+    
+    function tokenRewards(uint i) public view returns(address, uint256, uint256, address, uint256, uint256, uint256, uint256) {
+        return (address(0), 1, 1, address(0), 1, 1, 1, 1);
     }
 }

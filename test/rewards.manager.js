@@ -6,14 +6,16 @@ const truffleAssert = require('truffle-assertions');
 contract('RewardsManager', async (accounts) => {
 
     const [contractsOwner, otherAccount] = accounts;
+    const tokenRewards = 100;
+    const giftIndex = 1;
     var token;
     var dummy;
     var rewardsManager;
 	
 	before(async function () {
     	token = await StubERC20.new("Lido DAO Token", "LDO", 250000, { from: contractsOwner });
-		dummy = await DummyContract.new({ from: contractsOwner });
-    	rewardsManager = await RewardsManager.new(1, dummy.address, token.address, { from: contractsOwner });
+		dummy = await DummyContract.new(tokenRewards, giftIndex, { from: contractsOwner });
+    	rewardsManager = await RewardsManager.new(giftIndex, dummy.address, token.address, { from: contractsOwner });
 	});
 
     it('Owner can set RewordsContract address', async function () {
