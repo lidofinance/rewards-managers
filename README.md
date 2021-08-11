@@ -1,5 +1,8 @@
 # LIDO / 1inch co-incentivization flow
 
+## Flow
+Deployment, initalization and usage flows are described in [separate FLOW](./FLOW.md) document.
+
 ## Components versions
 - solc: 0.6.12
 - truffle: 5.4.3
