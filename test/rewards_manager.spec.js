@@ -61,8 +61,9 @@ contract('RewardsManager', async (accounts) => {
     it('setRewardsContract: Owner can set rewards contract address', async () => {
         const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
 
+        await rewardsManager.setRewardsContract(newAddr), { from: contractsOwner };
         truffleAssert.passes(rewardsManager.setRewardsContract(newAddr), { from: contractsOwner });
-        assert.equal((await rewardsManager.rewardsContract()).valueOf(), rewards.address, "rewardsContract address should match");
+        assert.equal((await rewardsManager.rewardsContract()).valueOf(), newAddr, "rewardsContract address should match");
     });
 
     it('setRewardsContract: Other account cannot set rewards contract address', async () => {
