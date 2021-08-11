@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: UNLICENSED
+
 pragma solidity ^0.6.12;
 
 import './Vendor.sol';
@@ -8,8 +10,7 @@ contract StubERC20 is ERC20 {
     }
 }
 
-contract Dummy {
-
+contract StubFarmingRewards {
     uint private _tokenRewards;
     uint private _giftIndex;
 
@@ -18,11 +19,9 @@ contract Dummy {
         _giftIndex = giftIndex_;
     }
 
-    function notifyRewardAmount(uint i, uint256 reward) public {
-
-    }
+    function notifyRewardAmount(uint, uint256) public {}
     
-    function tokenRewards(uint i) public view returns(address, uint256, uint256, address, uint256, uint256, uint256, uint256) {
+    function tokenRewards(uint) public view returns(address, uint256, uint256, address, uint256, uint256, uint256, uint256) {
         return (address(0), 1, 1, address(0), 1, 1, 1, 1);
     }
 }

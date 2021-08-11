@@ -56,7 +56,7 @@ Key points:
 It is better to restart Ganache CLI after test runs to have clean environment.
 
 ## Test coverage
-To generate tests coverage reports run:
+Use following command to generate tests coverage reports:
 ```bash
 npm run coverage
 ```
