@@ -23,8 +23,10 @@ contract RewardsManager is Ownable {
 
     /// @notice Gift identifier
     uint public giftIndex;
+
     /// @notice FarmingRewards contract address
     address public rewardsContract;
+
     /// @notice Reward token address
     address public rewardToken = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32;
 
@@ -32,8 +34,9 @@ contract RewardsManager is Ownable {
     /// @notice Constructor
     /// @param _giftIndex Gift identifier
     /// @param _rewardsContract FarmingRewards contract address
+    /// @param _rewardToken ERC20 reward token address
     constructor(uint _giftIndex, address _rewardsContract, address _rewardToken) public {
-        require(_rewardsContract != address(0));
+        require(_rewardsContract != address(0), "Zero rewardsContract address");
 
         giftIndex = _giftIndex;
         rewardsContract = _rewardsContract;
@@ -49,7 +52,7 @@ contract RewardsManager is Ownable {
     /// it can be inlined into a constructor.
     /// @param _rewardsContract FarmingRewards contract address
     function setRewardsContract(address _rewardsContract) public onlyOwner {
-        require(_rewardsContract != address(0));
+        require(_rewardsContract != address(0), "Zero rewardsContract address");
 
         rewardsContract = _rewardsContract;
     }
@@ -81,7 +84,7 @@ contract RewardsManager is Ownable {
     /// @param _tokenAddress Token address
     /// @param _amount Amount of tokens to recover
     function recover_erc20(address _tokenAddress, uint _amount) public onlyOwner {
-        require(_tokenAddress != address(0));
+        require(_tokenAddress != address(0), "Zero token address address");
 
         uint balance = IERC20(_tokenAddress).balanceOf(address(this));
 

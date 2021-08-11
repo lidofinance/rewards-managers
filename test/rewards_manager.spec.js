@@ -2,6 +2,7 @@ const StubERC20 = artifacts.require("StubERC20");
 const StubFarmingRewards = artifacts.require("StubFarmingRewards");
 const RewardsManager = artifacts.require("RewardsManager");
 const truffleAssert = require('truffle-assertions');
+const zero_address = "0x0000000000000000000000000000000000000000";
 
 contract('RewardsManager', async (accounts) => {
     const [contractsOwner, otherAccount] = accounts;
@@ -12,11 +13,22 @@ contract('RewardsManager', async (accounts) => {
     let rewards;
     let rewardsManager;
 
-    before(async () => {
+    beforeEach(async () => {
         token = await StubERC20.new("Lido DAO Token", "LDO", 250000, { from: contractsOwner });
         rewards = await StubFarmingRewards.new(tokenRewards, giftIndex, { from: contractsOwner });
         rewardsManager = await RewardsManager.new(giftIndex, rewards.address, token.address, { from: contractsOwner });
     });
+
+    // it('Rewards contract address not null reverted', async () => {
+    //     truffleAssert.fails(RewardsManager.new(giftIndex, zero_address, token.address), { from: contractsOwner });
+    // });
+
+    it('Constructor: Public varialbles set', async () => {
+        assert.equal(await rewardsManager.giftIndex(), giftIndex, "giftIndex should match");
+        assert.equal(await rewardsManager.rewardsContract(), rewards.address, "rewardsContract address should match");
+        assert.equal(await rewardsManager.rewardToken(), token.address, "token address should match");
+    });
+
 
     it('Owner can set rewards contract address (setRewardsContract)', async () => {
         const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
@@ -30,3 +42,23 @@ contract('RewardsManager', async (accounts) => {
         truffleAssert.fails(rewardsManager.setRewardsContract(newAddr), { from: otherAccount });
     });
 });
+
+// !!!! WIP
+// contract('Rewards contract address check', async (accounts) => {
+//     const [contractsOwner, otherAccount] = accounts;
+//     const tokenRewards = 100;
+//     const giftIndex = 1;
+
+//     let token;
+//     let rewards;
+//     let rewardsManager;
+
+//     beforeEach(async () => {
+//         token = await StubERC20.new("Lido DAO Token", "LDO", 250000, { from: contractsOwner });
+//     });
+
+//     it('Rewards contract address not null reverted', async () => {
+//         truffleAssert.fails(await RewardsManager.new(giftIndex, zero_address, token.address), { from: contractsOwner });
+//     });
+
+// });
