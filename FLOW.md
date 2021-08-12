@@ -49,13 +49,17 @@
     - Amount is TBD.
 4. **User** calls method `stake()` on `FarmingRewards`.
     - **User** receives staking tokens as the result.
-5. After some time **User** calls method `exit()` on `FarmingRewards`.
-    - **User** looses all staking tokens.
-    - **User** receives **LP**, **1INCH** and **LDO** tokens as the result.
-6. **User** calls method `withdraw()` on `Mooniswap`.
-    - **User** looses **LP** tokens.
-    - **User** receives **stETH** and **DAI** tokens (including rewards).
-    - **User** still has **1INCH** and **LDO** tokens.
+5. After some time **User** calls method `claim()` on `FarmingRewards`.
+    - **User** receives **1INCH** and **LDO** tokens as the result.
+    - **LP tokens** are left in `FarmingRewards`.
+6. **User** calls method `withdraw()` on `FarmingRewards`.
+    - **User** receives his **LP tokens**.
+    - **1INCH** and **LDO** are left in `FarmingRewards`.
+7. **User** calls method `exit()` on `FarmingRewards`.
+    - **User** receives **1INCH** and **LDO** tokens as the result.
+    - **User** receives his **LP tokens**.
+
+    
 
 ## Visual diagram of the flow
 ![Visual diagram](/FLOW.png)
