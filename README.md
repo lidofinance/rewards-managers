@@ -35,7 +35,8 @@ npm install
 ├── package.json                  # NPM dependencies and project configuration file
 ├── README.md                     # Project README file
 ├── test                          # Acceptance tests
-│     └── flow.spec.js            # Full flow simulation
+│     ├── flow.spec.js            # Full flow simulation
+│     └── rewards_manager.spec.js # Unit tests for RewardManager contract
 └── truffle-config.js             # Truffle project configuration file
 ```
 Key points:
