@@ -90,6 +90,43 @@ contract('RewardsManager', async (accounts) => {
         await truffleAssert.passes(rewardsManager.start_next_rewards_period({ from: contractsOwner }));
     });
 
+    it('recover_erc20: other account cannot recover tokens', async () => {
+        await truffleAssert.fails(rewardsManager.recover_erc20(token.address, 100, { from: otherAccount }), truffleAssert.ErrorType.REVERT, "caller is not the owner");
+    });
+
+    it('recover_erc20: zero token address', async () => {
+        await truffleAssert.fails(rewardsManager.recover_erc20(zeroAddress, 100, { from: contractsOwner }), truffleAssert.ErrorType.REVERT, "Zero token address");
+    });
+
+    it('recover_erc20: balance is not less than amount', async () => {
+        const someToken = await StubERC20.new("Some token", "ST", 100, { from: contractsOwner });
+        await someToken.transfer(rewardsManager.address, 100, { from: contractsOwner });
+
+        await truffleAssert.fails(rewardsManager.recover_erc20(someToken.address, 200, { from: contractsOwner }), truffleAssert.ErrorType.REVERT, "Balance too low");
+    });
+
+    it('recover_erc20: unable to transfer tokens', async () => {
+        const someToken = await StubERC20.new("Some token", "ST", 100, { from: contractsOwner });
+        await someToken.transfer(rewardsManager.address, 100, { from: contractsOwner });
+
+        await truffleAssert.fails(rewardsManager.recover_erc20(someToken.address, 100, { from: contractsOwner, gas: 2100 }));
+    });
+
+    it('recover_erc20: tokens transfered', async () => {
+        const someToken = await StubERC20.new("Some token", "ST", 100, { from: contractsOwner });
+        await someToken.transfer(rewardsManager.address, 100, { from: contractsOwner });
+
+        await truffleAssert.passes(rewardsManager.recover_erc20(someToken.address, 100, { from: contractsOwner }));
+    });
+
+    it('recover_erc20: tokens transfered with event', async () => {
+        const someToken = await StubERC20.new("Some token", "ST", 100, { from: contractsOwner });
+        await someToken.transfer(rewardsManager.address, 100, { from: contractsOwner });
+
+        result = await rewardsManager.recover_erc20(someToken.address, 80, { from: contractsOwner });
+        await truffleAssert.eventEmitted(result, 'ERC20TokenRecovered');
+    });
+
     it('setRewardsContract: owner can set rewards contract address', async () => {
         const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
 
@@ -101,6 +138,6 @@ contract('RewardsManager', async (accounts) => {
     it('setRewardsContract: other account cannot set rewards contract address', async () => {
         const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
 
-        await truffleAssert.fails(rewardsManager.setRewardsContract(newAddr, { from: otherAccount }));
+        await truffleAssert.fails(rewardsManager.setRewardsContract(newAddr, { from: otherAccount }), truffleAssert.ErrorType.REVERT, "caller is not the owner");
     });
 });

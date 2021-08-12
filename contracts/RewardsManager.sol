@@ -84,11 +84,11 @@ contract RewardsManager is Ownable {
     /// @param _tokenAddress Token address
     /// @param _amount Amount of tokens to recover
     function recover_erc20(address _tokenAddress, uint _amount) public onlyOwner {
-        require(_tokenAddress != address(0), "Zero token address address");
+        require(_tokenAddress != address(0), "Zero token address");
 
         uint balance = IERC20(_tokenAddress).balanceOf(address(this));
 
-        require(_amount <= balance, "Unable to recover tokens");
+        require(_amount <= balance, "Balance too low");
         require(IERC20(_tokenAddress).transfer(owner(), _amount), "Unable to transfer tokens");
 
         emit ERC20TokenRecovered(_tokenAddress, _amount, owner());
