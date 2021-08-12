@@ -56,3 +56,6 @@
     - **User** looses **LP** tokens.
     - **User** receives **stETH** and **DAI** tokens (including rewards).
     - **User** still has **1INCH** and **LDO** tokens.
+
+## Visual diagram of the flow
+![Visual diagram](/FLOW.png)
