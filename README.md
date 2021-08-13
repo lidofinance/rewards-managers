@@ -1,4 +1,4 @@
-# LIDO / 1inch co-incentivization flow
+# LIDO / 1inch co-incentivization integration
 
 ## Flow
 Deployment, initalization and usage flows are described in separate [FLOW document](./FLOW.md).

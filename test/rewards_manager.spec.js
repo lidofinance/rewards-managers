@@ -126,18 +126,4 @@ contract('RewardsManager', async (accounts) => {
         result = await rewardsManager.recover_erc20(someToken.address, 80, { from: contractsOwner });
         await truffleAssert.eventEmitted(result, 'ERC20TokenRecovered');
     });
-
-    it('setRewardsContract: owner can set rewards contract address', async () => {
-        const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
-
-        await truffleAssert.passes(rewardsManager.setRewardsContract(newAddr, { from: contractsOwner }));
-
-        assert.equal((await rewardsManager.rewardsContract()).valueOf(), newAddr, "rewardsContract address should match");
-    });
-
-    it('setRewardsContract: other account cannot set rewards contract address', async () => {
-        const newAddr = "0xa355B4B904ce09Bd1847f4cf133769BC0dfBC51B";
-
-        await truffleAssert.fails(rewardsManager.setRewardsContract(newAddr, { from: otherAccount }), truffleAssert.ErrorType.REVERT, "caller is not the owner");
-    });
 });

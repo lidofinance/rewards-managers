@@ -28,7 +28,7 @@ contract RewardsManager is Ownable {
     address public rewardsContract;
 
     /// @notice Reward token address
-    address public rewardToken = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32;
+    address public rewardToken;
 
 
     /// @notice Constructor
@@ -36,25 +36,12 @@ contract RewardsManager is Ownable {
     /// @param _rewardsContract FarmingRewards contract address
     /// @param _rewardToken ERC20 reward token address
     constructor(uint _giftIndex, address _rewardsContract, address _rewardToken) public {
-        require(_rewardsContract != address(0), "Zero rewardsContract address");
+        require(_rewardsContract != address(0), "Zero address for rewardsContract");
+        require(_rewardToken != address(0), "Zero address for rewardToken");
 
         giftIndex = _giftIndex;
         rewardsContract = _rewardsContract;
-
-        if (_rewardToken != address(0)) {
-            rewardToken = _rewardToken;
-        }
-    }
-
-    /// @notice Sets FarmingRewards contract address
-    /// @dev This method is to ensure that RewardsManager is not depending on deployment order. 
-    /// If deployment scheme is known and FarmingRewards is deployed before RewardsManager, 
-    /// it can be inlined into a constructor.
-    /// @param _rewardsContract FarmingRewards contract address
-    function setRewardsContract(address _rewardsContract) public onlyOwner {
-        require(_rewardsContract != address(0), "Zero rewardsContract address");
-
-        rewardsContract = _rewardsContract;
+        rewardToken = _rewardToken;
     }
 
     /// @notice Checks if reward period is finished

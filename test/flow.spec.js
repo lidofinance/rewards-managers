@@ -13,9 +13,7 @@ async function deployToken(name, sym, supply, owner) {
 }
 
 async function deployRewardsManager(owner, giftIndex, rewards, token) {
-    const rewardsManager = await RewardsManager.new(giftIndex, rewards.address, token.address, { from: owner });
-
-    return rewardsManager;
+    return await RewardsManager.new(giftIndex, rewards.address, token.address, { from: owner });
 }
 
 async function startNextRewardPeriod(rewardsManager, token, tokenOwner, tokenAmount, rewards) {
