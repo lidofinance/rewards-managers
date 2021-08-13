@@ -64,7 +64,7 @@ contract('RewardsManager', async (accounts) => {
     });
 
     it('start_next_rewards_period: token amount = 0', async () => {
-        await truffleAssert.fails(rewardsManager.start_next_rewards_period({ from: contractsOwner }), truffleAssert.ErrorType.REVERT, "Rewards disabled");
+        await truffleAssert.fails(rewardsManager.start_next_rewards_period({ from: contractsOwner }), truffleAssert.ErrorType.REVERT, "Zero token balance");
     });
 
     it('start_next_rewards_period: token amount > 0, rewards period not finished', async () => {

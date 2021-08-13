@@ -60,7 +60,7 @@ contract RewardsManager is Ownable {
     function start_next_rewards_period() public {
         uint amount = IERC20(rewardToken).balanceOf(address(this));
 
-        require(amount > 0, "Rewards disabled");
+        require(amount > 0, "Zero token balance");
         require(is_reward_period_finished(), "Rewards period not finished");
         require(IERC20(rewardToken).transfer(rewardsContract, amount), "Unable to transfer reward tokens");
 
