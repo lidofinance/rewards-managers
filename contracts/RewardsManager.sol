@@ -17,9 +17,9 @@ interface IFarmingRewards {
 contract RewardsManager is Ownable {
     /// @notice ERC20 tokens successfully recovered
     /// @param token Token contract address
+    /// @param recipient New token owner's address
     /// @param amount Amount of tokens recovered
-    /// @param owner New token owner's address
-    event ERC20TokenRecovered(address token, uint amount, address owner);
+    event ERC20TokenRecovered(address token, address recipient, uint amount);
 
     /// @notice Gift identifier
     uint public giftIndex;
@@ -69,16 +69,18 @@ contract RewardsManager is Ownable {
 
     /// @notice Sends tokens to contract owner's address in emergency
     /// @param _tokenAddress Token address
+    /// @param _recipient Address of a recipient of tokens
     /// @param _amount Amount of tokens to recover
-    function recover_erc20(address _tokenAddress, uint _amount) public onlyOwner {
+    function recover_erc20(address _tokenAddress, address _recipient, uint _amount) public onlyOwner {
         require(_tokenAddress != address(0), "Zero token address");
+        require(_recipient != address(0), "Zero recipient address");
 
         uint balance = IERC20(_tokenAddress).balanceOf(address(this));
 
         require(_amount <= balance, "Balance too low");
-        require(IERC20(_tokenAddress).transfer(owner(), _amount), "Unable to transfer tokens");
+        require(IERC20(_tokenAddress).transfer(_recipient, _amount), "Unable to transfer tokens");
 
-        emit ERC20TokenRecovered(_tokenAddress, _amount, owner());
+        emit ERC20TokenRecovered(_tokenAddress, _recipient, _amount);
     }
 
     /// @notice Gets reward period finish date from FarmingRewards contract
