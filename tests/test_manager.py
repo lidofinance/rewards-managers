@@ -4,7 +4,7 @@ from math import floor
 
 rewards_limit = 25 * 1000 * 10**18
 rewards_period = 3600 * 24 * 7
-MERKLE_CONTRACT = '0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809'
+MERKLE_CONTRACT = '0x884226c9f7b7205f607922E0431419276a64CF8f'
 
 
 def test_init(rewards_manager, ldo_agent, balancer_allocator):

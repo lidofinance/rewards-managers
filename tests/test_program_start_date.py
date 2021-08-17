@@ -12,9 +12,9 @@ def test_start_program(interface, deployer, ldo_agent, balancer_allocator, ldo_t
     amount = 100000 * 10**18
 
     manager_contract = deploy_manager(ldo_agent, balancer_allocator, start_date, {"from": deployer})
-    merkle_owner = interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809').owner()
+    merkle_owner = interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f').owner()
     if merkle_owner != manager_contract:
-        interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809')\
+        interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f')\
             .transferOwnership(manager_contract, {"from": merkle_owner})
 
 

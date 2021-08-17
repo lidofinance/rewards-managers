@@ -53,7 +53,7 @@ event AllocationsLimitChanged:
 owner: public(address)
 allocator: public(address)
 
-rewards_contract: constant(address) = 0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809
+rewards_contract: constant(address) = 0x884226c9f7b7205f607922E0431419276a64CF8f
 rewards_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 
 allocations_limit: public(uint256)

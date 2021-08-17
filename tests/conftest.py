@@ -54,9 +54,9 @@ def program_start_date():
 @pytest.fixture(scope='module')
 def rewards_manager(deployer, balancer_allocator, ldo_agent, interface, program_start_date):
     manager_contract = deploy_manager(ldo_agent, balancer_allocator, program_start_date, {"from": deployer})
-    merkle_owner = interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809').owner()
+    merkle_owner = interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f').owner()
     if merkle_owner != manager_contract:
-        interface.MerkleRedeem('0x6bd0B17713aaa29A2d7c9A39dDc120114f9fD809')\
+        interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f')\
             .transferOwnership(manager_contract, {"from": merkle_owner})
 
     return manager_contract
