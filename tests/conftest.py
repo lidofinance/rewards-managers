@@ -2,6 +2,7 @@ import time
 import pytest
 from brownie import MerkleMock, chain, accounts
 from scripts.deploy import deploy_manager
+from utils.config import lido_dao_voting_address
 
 
 from utils.config import (
@@ -31,6 +32,16 @@ def stranger(accounts):
 
 
 @pytest.fixture(scope='module')
+def ldo_holder(accounts):
+    return accounts.at('0x3e40d73eb977dc6a537af587d48316fee66e9c8c',force=True)
+
+
+@pytest.fixture(scope='module')
+def dao_voting(interface):
+    return interface.Voting(lido_dao_voting_address)
+
+
+@pytest.fixture(scope='module')
 def ldo_token(interface):
     return interface.ERC20(ldo_token_address)
 
@@ -41,7 +52,7 @@ def ldo_agent(interface):
 
 
 @pytest.fixture(scope='module')
-def dao_treasury(deployer, ldo_token):
+def dao_treasury():
     return accounts.at('0x3e40d73eb977dc6a537af587d48316fee66e9c8c', force = True)
 
 
