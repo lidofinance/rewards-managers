@@ -27,6 +27,7 @@ def test_out_of_funding_date(rewards_manager, period, ldo_token, dao_treasury, p
     chain.sleep(period)
     chain.mine()
     assert rewards_manager.out_of_funding_date() == out_of_funding_date
+    assert rewards_manager.periodFinish() == out_of_funding_date
 
 
 def test_out_of_funding_date_with_limit_change(
@@ -46,6 +47,7 @@ def test_out_of_funding_date_with_limit_change(
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.out_of_funding_date() == out_of_funding_date
+    assert rewards_manager.periodFinish() == out_of_funding_date
     assert rewards_manager.available_allocations() == rewards_limit
  
     out_of_funding_date = program_start_date + 2 * rewards_period
@@ -53,3 +55,4 @@ def test_out_of_funding_date_with_limit_change(
     rewards_manager.change_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
     assert rewards_manager.out_of_funding_date() == out_of_funding_date
+    assert rewards_manager.periodFinish() == out_of_funding_date

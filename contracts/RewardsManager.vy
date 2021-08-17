@@ -222,9 +222,9 @@ def unpause():
     log Unpaused(msg.sender)
 
 
-@external
+@internal
 @view
-def out_of_funding_date() -> uint256:
+def _out_of_funding_date() -> uint256:
     """
     @notice 
         Expected date of the manager to run out of funds at the current rate. 
@@ -244,7 +244,19 @@ def out_of_funding_date() -> uint256:
     # incrementing unaccounted periods count to get the end of last period instead of the begining
     unaccounted_periods += 1
     return self.last_accounted_period_date + unaccounted_periods * rewards_period_duration
-    
+
+
+@external
+@view
+def out_of_funding_date() -> uint256:
+    return self._out_of_funding_date()
+
+
+@external
+@view
+def periodFinish() -> uint256:
+    return self._out_of_funding_date()
+
 
 @external
 def transfer_ownership(_to: address):
