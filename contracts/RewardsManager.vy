@@ -18,11 +18,11 @@ interface IRewardsContract:
 
 
 event OwnerChanged:
-    new_owner: address
+    new_owner: indexed(address)
 
 
 event AllocatorChanged:
-    new_allocator: address
+    new_allocator: indexed(address)
 
 
 event Allocation:
@@ -34,17 +34,17 @@ event RewardsLimitChanged:
 
 
 event ERC20TokenRecovered:
-    token: address
+    token: indexed(address)
     amount: uint256
-    recipient: address
+    recipient: indexed(address)
 
 
 event Paused:
-    actor: address
+    actor: indexed(address)
 
 
 event Unpaused:
-    actor: address
+    actor: indexed(address)
 
 
 event AllocationsLimitChanged:
@@ -52,7 +52,7 @@ event AllocationsLimitChanged:
 
 
 event RewardContractOwnershipTransfered:
-    new_owner: address
+    new_owner: indexed(address)
 
 
 owner: public(address)
