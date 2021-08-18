@@ -305,11 +305,10 @@ def recover_erc20(_token: address, _amount: uint256, _recipient: address):
     """
     @notice
         Transfers specified amount of the given ERC20 token from self
-        to the owner. Can only be called by the owner.
+        to the recipient. Can only be called by the owner.
     """
-    owner: address = self.owner
-    assert msg.sender == owner, "manager: not permitted"
+    assert msg.sender == self.owner, "manager: not permitted"
 
-    if ERC20(_token).balanceOf(self) >= _amount:
-        assert ERC20(_token).transfer(owner, _amount), "manager: token transfer failed"
-        log ERC20TokenRecovered(_token, _amount, owner)
+    if _amount > 0:
+        assert ERC20(_token).transfer(_recipient, _amount), "manager: token transfer failed"
+        log ERC20TokenRecovered(_token, _amount, _recipient)

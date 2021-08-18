@@ -10,16 +10,16 @@ from utils.config import (lido_dao_voting_address,
                           ldo_token_address)
 from utils.evm_script import encode_call_script
 
-def test_erc_20_recover_via_voting(ldo_holder, helpers, accounts, dao_voting, ldo_token):
+def test_erc_20_recover_via_voting(ldo_holder, rewards_manager, helpers, accounts, dao_voting, ldo_token, stranger):
     
-    manager_contract = Contract.from_abi('RewardsManager', balancer_deployed_manager, RewardsManager.abi)
+    # manager_contract = Contract.from_abi('RewardsManager', balancer_deployed_manager, RewardsManager.abi)
     agent_contract = interface.Agent(lido_dao_agent_address)
 
-    ldo_token.transfer(manager_contract, 10**18, {"from": ldo_holder})
-    assert ldo_token.balanceOf(manager_contract) == 10**18
+    ldo_token.transfer(rewards_manager, 10**18, {"from": ldo_holder})
+    assert ldo_token.balanceOf(rewards_manager) == 10**18
 
-    encoded_recover_calldata = manager_contract.recover_erc20.encode_input(ldo_token_address, 10**18)
-    recover_script = encode_call_script([(balancer_deployed_manager, encoded_recover_calldata)])
+    encoded_recover_calldata = rewards_manager.recover_erc20.encode_input(ldo_token_address, 10**18, stranger)
+    recover_script = encode_call_script([(rewards_manager.address, encoded_recover_calldata)])
     forwrded_script = encode_call_script([(lido_dao_agent_address, agent_contract.forward.encode_input(recover_script))])
     
     (vote_id, _) = create_vote(
@@ -33,4 +33,5 @@ def test_erc_20_recover_via_voting(ldo_holder, helpers, accounts, dao_voting, ld
                          accounts=accounts,
                          dao_voting=dao_voting)
     
-    assert ldo_token.balanceOf(manager_contract) == 0
+    assert ldo_token.balanceOf(rewards_manager) == 0
+    assert ldo_token.balanceOf(stranger) == 10**18
