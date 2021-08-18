@@ -50,7 +50,7 @@ event OwnerChanged:
     new_owner: address
 ```
 
-##### `transfer_rewards_contract(_to: address)`
+##### `transfer_rewards_contract_ownership(_to: address)`
 
 Changes `OWNER`. Can be called by owner only.
 
@@ -72,7 +72,7 @@ event AllocatorChanged:
     new_allocator: address
 ```
 
-##### `set_rewards_limit(_new_limit: uint256)`
+##### `set_rewards_limit_per_period(_new_limit: uint256)`
 
 Changes reward token limit per period `rewards_period_duration`. Can be called by owner only. 
 Updates current allocations limit and set rewards limit for next periods.

@@ -105,8 +105,8 @@ def _update_last_accounted_period_start_date():
     @notice 
         Updates last_accounted_period_start_date to timestamp of current period
     """
-    unaccounted_periods: uint256 = self._unaccounted_periods()
-    self.last_accounted_period_start_date = self.last_accounted_period_start_date + rewards_period_duration * unaccounted_periods
+    self.last_accounted_period_start_date = self.last_accounted_period_start_date \
+        + rewards_period_duration * self._unaccounted_periods()
 
 
 @internal
@@ -115,8 +115,7 @@ def _available_allocations() -> uint256:
     if self.is_paused == True:
         return self.allocations_limit
 
-    unaccounted_periods: uint256 = self._unaccounted_periods()
-    return self.allocations_limit + unaccounted_periods * self.rewards_limit_per_period
+    return self.allocations_limit + self._unaccounted_periods() * self.rewards_limit_per_period
 
 
 @external
@@ -164,7 +163,7 @@ def set_allocations_limit(_new_allocations_limit: uint256):
 
 
 @external
-def set_rewards_limit(_new_limit: uint256):
+def set_rewards_limit_per_period(_new_limit: uint256):
     """
     @notice 
         Updates all finished periods since last allowance update
@@ -264,7 +263,7 @@ def out_of_funding_date() -> uint256:
 
 @external
 @view
-def periodFinish() -> uint256:
+def period_finish() -> uint256:
     return self._out_of_funding_date()
 
 
@@ -289,7 +288,7 @@ def set_allocator(_new_allocator: address):
 
 
 @external
-def transfer_rewards_contract(_new_owner: address):
+def transfer_rewards_contract_ownership(_new_owner: address):
     """
     @notice Changes the owner of reward contract. Can only be called by the current owner.
     """

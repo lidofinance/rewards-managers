@@ -31,7 +31,7 @@ def test_transfer_reward_contract(rewards_manager, ldo_agent, stranger, helpers,
     print(rewards_manager)
     print(merkle_contract.owner())
     assert merkle_contract.owner() == rewards_manager
-    tx = rewards_manager.transfer_rewards_contract(stranger, {"from": ldo_agent})
+    tx = rewards_manager.transfer_rewards_contract_ownership(stranger, {"from": ldo_agent})
     assert merkle_contract.owner() == stranger
 
     helpers.assert_single_event_named("RewardContractOwnershipTransfered", tx, {"new_owner": stranger})
@@ -93,20 +93,20 @@ def test_allocations_limit_calculation_with_changed_rewards_limit(rewards_manage
     chain.mine()
     assert rewards_manager.available_allocations() == rewards_limit
 
-    rewards_manager.set_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
+    rewards_manager.set_rewards_limit_per_period(2 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.available_allocations() == rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.available_allocations() == rewards_limit + 2 * rewards_limit
 
-    rewards_manager.set_rewards_limit(0.5 * rewards_limit, {"from": ldo_agent})
+    rewards_manager.set_rewards_limit_per_period(0.5 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.available_allocations() == rewards_limit + 2 * rewards_limit
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.available_allocations() == rewards_limit + 2 * rewards_limit + 0.5 * rewards_limit
 
 
-def test_set_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
+def test_set_rewards_limit_per_period(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.rewards_limit_per_period() == rewards_limit
 
     assert rewards_manager.available_allocations() == 0
@@ -115,9 +115,9 @@ def test_set_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.available_allocations() == rewards_limit
 
     with reverts():
-        rewards_manager.set_rewards_limit(2 * rewards_limit, {"from": stranger})
+        rewards_manager.set_rewards_limit_per_period(2 * rewards_limit, {"from": stranger})
 
-    tx = rewards_manager.set_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
+    tx = rewards_manager.set_rewards_limit_per_period(2 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
     helpers.assert_single_event_named("RewardsLimitChanged", tx, {"new_limit": 2 * rewards_limit})
 
@@ -127,7 +127,7 @@ def test_set_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.available_allocations() == (1 + 2) * rewards_limit
 
 
-def test_set_rewards_limit_when_paused(rewards_manager, ldo_agent, program_start_date):
+def test_set_rewards_limit_per_period_when_paused(rewards_manager, ldo_agent, program_start_date):
     assert rewards_manager.rewards_limit_per_period() == rewards_limit
 
     assert rewards_manager.available_allocations() == 0
@@ -140,7 +140,7 @@ def test_set_rewards_limit_when_paused(rewards_manager, ldo_agent, program_start
     chain.sleep(2 * rewards_period)
     chain.mine()
 
-    rewards_manager.set_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
+    rewards_manager.set_rewards_limit_per_period(2 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
 
     rewards_manager.unpause(program_start_date + 3 * rewards_period, rewards_limit, {"from": ldo_agent})
