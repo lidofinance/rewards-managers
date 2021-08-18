@@ -1,4 +1,12 @@
+__pycache__
+.history
+.hypothesis/
+.pytest_cache/
+.vscode/
 build/
-coverage/
+reports/
+venv/
 node_modules/
-coverage.json
+bin/
+.DS_Store
+.env

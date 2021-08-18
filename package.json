@@ -1,23 +1,27 @@
 {
-    "name": "lido",
-    "version": "0.0.0",
-    "description": "",
-    "scripts": {
-        "clean": "rm -rf build/",
-        "compile": "npm run clean && truffle compile",
-        "migrate": "truffle migrate",
-        "ganache": "ganache-cli -l 9000000000000000 -g 0 --allowUnlimitedContractSize",
-        "coverage": "truffle run coverage",
-        "test": "truffle test"
-    },
-    "author": "Folks from MadDevs",
-    "license": "UNLICENSED",
-    "dependencies": {
-        "@openzeppelin/contracts": "^3.2.0",
-        "truffle": "^5.4.2",
-        "truffle-assertions": "^0.9.2"
-    },
-    "devDependencies": {
-        "solidity-coverage": "^0.7.16"
+  "name": "1inch-lido",
+  "version": "1.0.0",
+  "repository": "https://github.com/maddevsio/lido.git",
+  "author": "Folks from Mad Devs",
+  "license": "MIT",
+  "dependencies": {
+    "ethlint": "^1.2.5",
+    "husky": "^6.0.0",
+    "prettier": "^2.3.0",
+    "prettier-plugin-solidity": "^1.0.0-beta.10",
+    "pretty-quick": "^3.1.0"
+  },
+  "scripts": {
+    "lint": "pretty-quick --pattern '**/*.*(sol|json)' --verbose",
+    "lint:check": "prettier --check **/*.sol **/*.json",
+    "lint:fix": "pretty-quick --pattern '**/*.*(sol|json)' --staged --verbose"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint:fix"
     }
+  },
+  "devDependencies": {
+    "recursive-copy": "^2.0.13"
+  }
 }
