@@ -86,12 +86,26 @@ def __init__(
 
     log OwnerChanged(self.owner)
     log AllocatorChanged(self.allocator)
+    log Unpaused(self.owner)
 
 
 @internal
 @view
-def _periods_since_last_update(_end_date: uint256) -> uint256:
+def _unaccounted_periods(_end_date: uint256) -> uint256:
+    last_accounted_period_date: uint256 = self.last_accounted_period_date
+    if (last_accounted_period_date > _end_date):
+        return 0
     return (_end_date - self.last_accounted_period_date) / rewards_period_duration
+
+
+@internal
+def _update_last_accounted_period_date():
+    """
+    @notice 
+        Updates last_accounted_period_date to timestamp of current period
+    """
+    unaccounted_periods: uint256 = self._unaccounted_periods(block.timestamp)
+    self.last_accounted_period_date = self.last_accounted_period_date + rewards_period_duration * unaccounted_periods
 
 
 @internal
@@ -100,7 +114,7 @@ def _available_allocations() -> uint256:
     if self.is_paused == True:
         return self.allocations_limit
 
-    unaccounted_periods: uint256 = self._periods_since_last_update(block.timestamp)
+    unaccounted_periods: uint256 = self._unaccounted_periods(block.timestamp)
     return self.allocations_limit + unaccounted_periods * self.rewards_limit_per_period
 
 
@@ -118,23 +132,13 @@ def available_allocations() -> uint256:
 
 
 @internal
-def _update_last_accounted_period_date():
-    """
-    @notice 
-        Updates last_accounted_period_date to timestamp of current period
-    """
-    periods: uint256 = self._periods_since_last_update(block.timestamp)
-    self.last_accounted_period_date = self.last_accounted_period_date + rewards_period_duration * periods
-
-
-@internal
 def _change_allocations_limit(_new_allocations_limit: uint256):
     """
     @notice Changes the allocations limit for Merkle Rewadrds contact. 
     """
     self.allocations_limit = _new_allocations_limit
 
-    # Reseting unaccounted allocations allowance
+    # Reseting unaccounted period date
     self._update_last_accounted_period_date()
     
     log AllocationsLimitChanged(_new_allocations_limit)
@@ -156,6 +160,23 @@ def change_allocations_limit(_new_allocations_limit: uint256):
     """
     assert msg.sender == self.owner, "manager: not permitted"
     self._change_allocations_limit(_new_allocations_limit)
+
+
+@external
+def change_rewards_limit(_new_limit: uint256):
+    """
+    @notice 
+        Updates all finished periods since last allowance update
+        and changes the amount of available allocations increasing
+        per reward period.
+        Can only be called by the current owner.
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+
+    self._update_allocations_limit()
+    self.rewards_limit_per_period = _new_limit
+    
+    log RewardsLimitChanged(self.rewards_limit_per_period)
 
 
 @external
@@ -183,23 +204,6 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
 
 
 @external
-def change_rewards_limit(_new_limit: uint256):
-    """
-    @notice 
-        Updates all finished periods since last allowance update
-        and changes the amount of available allocations increasing
-        per reward period.
-        Can only be called by the current owner.
-    """
-    assert msg.sender == self.owner, "manager: not permitted"
-
-    self._update_allocations_limit()
-    self.rewards_limit_per_period = _new_limit
-    
-    log RewardsLimitChanged(self.rewards_limit_per_period)
-
-
-@external
 def pause():
     """
     @notice
@@ -214,14 +218,15 @@ def pause():
 
 
 @external
-def unpause():
+def unpause(_start_date: uint256, _new_allocations_limit: uint256):
     """
     @notice
         Unpause allocations increasing and allows seedAllocations calling
     """
     assert msg.sender == self.owner, "manager: not permitted"
     
-    self._update_last_accounted_period_date()
+    self._change_allocations_limit(_new_allocations_limit)
+    self.last_accounted_period_date = _start_date - rewards_period_duration
     self.is_paused = False
 
     log Unpaused(msg.sender)

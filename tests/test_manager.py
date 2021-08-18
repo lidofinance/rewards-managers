@@ -70,7 +70,7 @@ def test_allocations_limit_basic_calculation(rewards_manager, period):
     assert rewards_manager.available_allocations() == floor(2 * period/rewards_period) * rewards_limit
     
 
-def test_allocations_limit_paused_calculation(rewards_manager, ldo_agent):
+def test_allocations_limit_paused_calculation(rewards_manager, ldo_agent, program_start_date):
     assert rewards_manager.available_allocations() == 0
     chain.sleep(floor(1.5 * rewards_period))
     chain.mine()
@@ -81,7 +81,7 @@ def test_allocations_limit_paused_calculation(rewards_manager, ldo_agent):
     chain.mine()
     assert rewards_manager.available_allocations() == rewards_limit
 
-    rewards_manager.unpause({"from": ldo_agent})
+    rewards_manager.unpause(program_start_date + 2 * rewards_period, rewards_limit, {"from": ldo_agent})
     chain.sleep(rewards_period)
     chain.mine()
     assert rewards_manager.available_allocations() == 2 * rewards_limit
@@ -127,7 +127,7 @@ def test_change_rewards_limit(rewards_manager, ldo_agent, stranger, helpers):
     assert rewards_manager.available_allocations() == (1 + 2) * rewards_limit
 
 
-def test_change_rewards_limit_when_paused(rewards_manager, ldo_agent, stranger, helpers):
+def test_change_rewards_limit_when_paused(rewards_manager, ldo_agent, program_start_date):
     assert rewards_manager.rewards_limit_per_period() == rewards_limit
 
     assert rewards_manager.available_allocations() == 0
@@ -143,7 +143,7 @@ def test_change_rewards_limit_when_paused(rewards_manager, ldo_agent, stranger, 
     rewards_manager.change_rewards_limit(2 * rewards_limit, {"from": ldo_agent})
     assert rewards_manager.rewards_limit_per_period() == 2 * rewards_limit
 
-    rewards_manager.unpause({"from": ldo_agent})
+    rewards_manager.unpause(program_start_date + 3 * rewards_period, rewards_limit, {"from": ldo_agent})
 
     assert rewards_manager.available_allocations() == rewards_limit
     chain.sleep(rewards_period)
@@ -151,7 +151,7 @@ def test_change_rewards_limit_when_paused(rewards_manager, ldo_agent, stranger, 
     assert rewards_manager.available_allocations() == (1 + 2) * rewards_limit
 
 
-def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator):
+def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator, program_start_date):
     assert rewards_manager.is_paused() == False
 
     rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
@@ -169,9 +169,9 @@ def test_pause(rewards_manager, ldo_agent, stranger, helpers, balancer_allocator
         rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
 
     with reverts():
-        rewards_manager.unpause({"from": stranger})
+        rewards_manager.unpause(program_start_date, 0, {"from": stranger})
 
-    tx = rewards_manager.unpause({"from": ldo_agent})
+    tx = rewards_manager.unpause(program_start_date, 0, {"from": ldo_agent})
     helpers.assert_single_event_named("Unpaused", tx, {"actor": ldo_agent})
     assert rewards_manager.is_paused() == False
 
@@ -204,7 +204,8 @@ def test_seed_allocations(
     stranger,
     helpers,
     dao_treasury,
-    balancer_allocator
+    balancer_allocator,
+    program_start_date
 ):
     with reverts():
         rewards_manager.seed_allocations(0, '', 0, {"from": stranger})
@@ -212,7 +213,7 @@ def test_seed_allocations(
     rewards_manager.pause({"from": ldo_agent})
     with reverts():
         rewards_manager.seed_allocations(0, '', 0, {"from": balancer_allocator})
-    rewards_manager.unpause({"from": ldo_agent})
+    rewards_manager.unpause(program_start_date, 0, {"from": ldo_agent})
 
 
     chain.sleep(rewards_period)
@@ -243,11 +244,11 @@ def test_recover_erc20(rewards_manager, ldo_agent, ldo_token, stranger, helpers,
     assert ldo_token.balanceOf(rewards_manager) == 100
 
     with reverts('manager: not permitted'):
-        rewards_manager.recover_erc20(ldo_token, 100, {"from": stranger})
+        rewards_manager.recover_erc20(ldo_token, 100, ldo_agent, {"from": stranger})
 
     balance = ldo_token.balanceOf(ldo_agent)
 
-    tx = rewards_manager.recover_erc20(ldo_token, 100, {"from": ldo_agent})
+    tx = rewards_manager.recover_erc20(ldo_token, 100, ldo_agent, {"from": ldo_agent})
     assert ldo_token.balanceOf(rewards_manager) == 0
     assert ldo_token.balanceOf(ldo_agent) == balance + 100
     helpers.assert_single_event_named(
@@ -266,9 +267,6 @@ def test_recover_erc20_empty_balance(
     assert ldo_token.balanceOf(rewards_manager) == 0
 
     with reverts('manager: not permitted'):
-        rewards_manager.recover_erc20(ldo_token, 100, {"from": stranger})
-
-    balance = ldo_token.balanceOf(ldo_agent)
-    tx = rewards_manager.recover_erc20(ldo_token, 100, {"from": ldo_agent})
-    assert ldo_token.balanceOf(ldo_agent) == balance
-    helpers.assert_no_events_named("ERC20TokenRecovered", tx)
+        rewards_manager.recover_erc20(ldo_token, 100, ldo_agent, {"from": stranger})
+    with reverts('manager: token transfer failed'):
+        rewards_manager.recover_erc20(ldo_token, 100, ldo_agent, {"from": ldo_agent})
