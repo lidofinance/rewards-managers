@@ -15,3 +15,14 @@ Compile the smart contracts:
 ```bash
 brownie compile # add `--size` to see contract compiled sizes
 ```
+
+## Test
+To test on a local development network run:
+```bash
+brownie test
+```
+To test on mainnet fork you neet to set your [Infura](https://infura.io/product/ethereum) project ID first:
+```bash
+export WEB3_INFURA_PROJECT_ID=YourProjectID
+brownie test --network mainnet-fork
+```

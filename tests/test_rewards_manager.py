@@ -1,9 +1,12 @@
 import pytest
+from brownie import RewardsManager, reverts
+from utils.config import ldo_token_address
 
-@pytest.fixture
-def rewards_manager_contract(RewardsManager, accounts):
+
+def test_deploy(RewardsManager, accounts):
     # deploy the contract
-    yield RewardsManager.deploy({'from': accounts[0]});
+    rew_man = RewardsManager.deploy({'from': accounts[0]})
+    
+    assert rew_man.owner() == accounts[0]
 
-def test_ownership(rewards_manager_contract, accounts):
-    assert rewards_manager_contract.owner() == accounts[0];
+
