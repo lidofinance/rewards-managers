@@ -1,4 +1,4 @@
-# @version 0.2.14
+# @version 0.2.15
 # @notice A manager contract for the FramingRewards contract.
 # @license MIT
 from vyper.interfaces import ERC20
