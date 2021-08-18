@@ -69,7 +69,8 @@ def merkle_contract(interface):
 
 @pytest.fixture(scope='module')
 def rewards_manager(deployer, balancer_allocator, ldo_agent, interface, merkle_contract, program_start_date):
-    manager_contract = deploy_manager(ldo_agent, balancer_allocator, program_start_date, {"from": deployer})
+    manager_contract = deploy_manager( balancer_allocator, program_start_date, {"from": deployer})
+    manager_contract.transfer_ownership(ldo_agent, {"from": deployer})
     merkle_owner = merkle_contract.owner()
     if merkle_owner != manager_contract:
         merkle_contract.transferOwnership(manager_contract, {"from": merkle_owner})

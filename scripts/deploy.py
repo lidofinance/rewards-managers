@@ -10,10 +10,9 @@ from utils.config import (
 )
 
 
-def deploy_manager(owner, allocator, start_date, tx_params):
+def deploy_manager(allocator, start_date, tx_params):
     # Etherscan doesn't support Vyper verification yet
     return RewardsManager.deploy(
-        owner, # _owner
         allocator, # _allocator
         start_date, # _start_date
         tx_params,
@@ -41,9 +40,10 @@ def main():
         print('Aborting')
         return
 
-    deploy_manager(
-        owner,
+    manager_contract = deploy_manager(
         allocator,
         start_date,
         tx_params={"from": deployer}
     )
+
+    manager_contract.transfer_ownership(owner, {"from": deployer})

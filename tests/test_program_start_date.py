@@ -11,7 +11,8 @@ start_date = 1629072000 # Mon Aug 16 2021 00:00:00 GMT+0000
 def test_start_program(interface, deployer, ldo_agent, balancer_allocator, ldo_token):
     amount = 100000 * 10**18
 
-    manager_contract = deploy_manager(ldo_agent, balancer_allocator, start_date, {"from": deployer})
+    manager_contract = deploy_manager(balancer_allocator, start_date, {"from": deployer})
+    manager_contract.transfer_ownership(ldo_agent, {"from": deployer})
     merkle_owner = interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f').owner()
     if merkle_owner != manager_contract:
         interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f')\
