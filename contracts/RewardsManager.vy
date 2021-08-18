@@ -86,7 +86,9 @@ def __init__(
 
     log OwnerChanged(self.owner)
     log AllocatorChanged(self.allocator)
+    log AllocationsLimitChanged(0)
     log Unpaused(self.owner)
+    log RewardsLimitChanged(self.rewards_limit_per_period)
 
 
 @internal
@@ -189,14 +191,13 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     assert msg.sender == self.allocator, "manager: not permitted"
     assert self.is_paused == False, "manager: contract is paused"
 
-    self._update_allocations_limit()
-
     assert ERC20(rewards_token).balanceOf(self) >= _amount, "manager: reward token balance is low"
-    assert self.allocations_limit >= _amount, "manager: not enought amount approved"
 
-    self.allocations_limit -= _amount
+    available_allocations: uint256 = self._available_allocations()
+    assert available_allocations >= _amount, "manager: not enought amount approved"
 
     ERC20(rewards_token).approve(rewards_contract, _amount)
+    self._change_allocations_limit(available_allocations - _amount)
 
     IRewardsContract(rewards_contract).seedAllocations(_week, _merkle_root, _amount)
 
