@@ -14,6 +14,7 @@ interface ERC20:
 
 interface IRewardsContract:
     def seedAllocations(_week: uint256, _merkleRoot: bytes32, _totalAllocation: uint256): nonpayable
+    def transferOwnership(newOwner: address): nonpayable
 
 
 event OwnerChanged:
@@ -48,6 +49,10 @@ event Unpaused:
 
 event AllocationsLimitChanged:
     new_limit: uint256
+
+
+event RewardContractOwnershipTransfered:
+    new_owner: address
 
 
 owner: public(address)
@@ -279,7 +284,18 @@ def change_allocator(_new_allocator: address):
 
 
 @external
-def recover_erc20(_token: address, _amount: uint256):
+def transfer_rewards_contract(_new_owner: address):
+    """
+    @notice Changes the owner of reward contract. Can only be called by the current owner.
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+    IRewardsContract(rewards_contract).transferOwnership(_new_owner)
+
+    log RewardContractOwnershipTransfered(_new_owner)
+
+
+@external
+def recover_erc20(_token: address, _amount: uint256, _recipient: address):
     """
     @notice
         Transfers specified amount of the given ERC20 token from self

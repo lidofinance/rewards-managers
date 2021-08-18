@@ -63,7 +63,12 @@ def program_start_date():
 
 
 @pytest.fixture(scope='module')
-def rewards_manager(deployer, balancer_allocator, ldo_agent, interface, program_start_date):
+def merkle_contract(interface):
+    return interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f')
+
+
+@pytest.fixture(scope='module')
+def rewards_manager(deployer, balancer_allocator, ldo_agent, interface, merkle_contract, program_start_date):
     manager_contract = deploy_manager(ldo_agent, balancer_allocator, program_start_date, {"from": deployer})
     merkle_owner = interface.MerkleRedeem('0x884226c9f7b7205f607922E0431419276a64CF8f').owner()
     if merkle_owner != manager_contract:

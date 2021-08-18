@@ -24,6 +24,19 @@ def test_transfer_ownership(rewards_manager, ldo_agent, stranger, helpers):
     helpers.assert_single_event_named("OwnerChanged", tx, {"new_owner": stranger})
 
 
+def test_transfer_reward_contract(rewards_manager, ldo_agent, stranger, helpers, merkle_contract):
+    with reverts():
+        rewards_manager.transfer_ownership(stranger, {"from": stranger})
+
+    print(rewards_manager)
+    print(merkle_contract.owner())
+    assert merkle_contract.owner() == rewards_manager
+    tx = rewards_manager.transfer_rewards_contract(stranger, {"from": ldo_agent})
+    assert merkle_contract.owner() == stranger
+
+    helpers.assert_single_event_named("RewardContractOwnershipTransfered", tx, {"new_owner": stranger})
+
+
 def test_change_allocator(rewards_manager, ldo_agent, balancer_allocator, stranger, helpers):
     with reverts():
         rewards_manager.change_allocator(stranger, {"from": stranger})
