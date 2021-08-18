@@ -64,50 +64,49 @@ rewards_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 allocations_limit: public(uint256)
 rewards_limit_per_period: public(uint256)
 rewards_period_duration: constant(uint256) = 604800  # 3600 * 24 * 7
-last_accounted_period_date: public(uint256)
+last_accounted_period_start_date: public(uint256)
 
 is_paused: public(bool)
 
 
 @external
 def __init__(
-    _owner: address,
     _allocator: address,
     _start_date: uint256
 ):
-    self.owner = _owner
+    self.owner = msg.sender
     self.allocator = _allocator
 
     self.allocations_limit = 0
     self.is_paused = False
 
     self.rewards_limit_per_period = 25000 * 10**18
-    self.last_accounted_period_date = _start_date - rewards_period_duration
+    self.last_accounted_period_start_date = _start_date - rewards_period_duration
 
     log OwnerChanged(self.owner)
     log AllocatorChanged(self.allocator)
-    log AllocationsLimitChanged(0)
+    log AllocationsLimitChanged(self.allocations_limit)
     log Unpaused(self.owner)
     log RewardsLimitChanged(self.rewards_limit_per_period)
 
 
 @internal
 @view
-def _unaccounted_periods(_end_date: uint256) -> uint256:
-    last_accounted_period_date: uint256 = self.last_accounted_period_date
-    if (last_accounted_period_date > _end_date):
+def _unaccounted_periods() -> uint256:
+    last_accounted_period_start_date: uint256 = self.last_accounted_period_start_date
+    if (last_accounted_period_start_date > block.timestamp):
         return 0
-    return (_end_date - self.last_accounted_period_date) / rewards_period_duration
+    return (block.timestamp - self.last_accounted_period_start_date) / rewards_period_duration
 
 
 @internal
-def _update_last_accounted_period_date():
+def _update_last_accounted_period_start_date():
     """
     @notice 
-        Updates last_accounted_period_date to timestamp of current period
+        Updates last_accounted_period_start_date to timestamp of current period
     """
-    unaccounted_periods: uint256 = self._unaccounted_periods(block.timestamp)
-    self.last_accounted_period_date = self.last_accounted_period_date + rewards_period_duration * unaccounted_periods
+    unaccounted_periods: uint256 = self._unaccounted_periods()
+    self.last_accounted_period_start_date = self.last_accounted_period_start_date + rewards_period_duration * unaccounted_periods
 
 
 @internal
@@ -116,7 +115,7 @@ def _available_allocations() -> uint256:
     if self.is_paused == True:
         return self.allocations_limit
 
-    unaccounted_periods: uint256 = self._unaccounted_periods(block.timestamp)
+    unaccounted_periods: uint256 = self._unaccounted_periods()
     return self.allocations_limit + unaccounted_periods * self.rewards_limit_per_period
 
 
@@ -134,14 +133,14 @@ def available_allocations() -> uint256:
 
 
 @internal
-def _change_allocations_limit(_new_allocations_limit: uint256):
+def _set_allocations_limit(_new_allocations_limit: uint256):
     """
     @notice Changes the allocations limit for Merkle Rewadrds contact. 
     """
     self.allocations_limit = _new_allocations_limit
 
     # Reseting unaccounted period date
-    self._update_last_accounted_period_date()
+    self._update_last_accounted_period_start_date()
     
     log AllocationsLimitChanged(_new_allocations_limit)
 
@@ -152,20 +151,20 @@ def _update_allocations_limit():
     @notice Updates allowance based on current calculated allocations limit
     """
     new_allocations_limit: uint256 = self._available_allocations()
-    self._change_allocations_limit(new_allocations_limit)
+    self._set_allocations_limit(new_allocations_limit)
 
 
 @external
-def change_allocations_limit(_new_allocations_limit: uint256):
+def set_allocations_limit(_new_allocations_limit: uint256):
     """
     @notice Changes the allocations limit for Merkle Rewadrds contact. Can only be called by owner.
     """
     assert msg.sender == self.owner, "manager: not permitted"
-    self._change_allocations_limit(_new_allocations_limit)
+    self._set_allocations_limit(_new_allocations_limit)
 
 
 @external
-def change_rewards_limit(_new_limit: uint256):
+def set_rewards_limit(_new_limit: uint256):
     """
     @notice 
         Updates all finished periods since last allowance update
@@ -197,7 +196,7 @@ def seed_allocations(_week: uint256, _merkle_root: bytes32, _amount: uint256):
     assert available_allocations >= _amount, "manager: not enought amount approved"
 
     ERC20(rewards_token).approve(rewards_contract, _amount)
-    self._change_allocations_limit(available_allocations - _amount)
+    self._set_allocations_limit(available_allocations - _amount)
 
     IRewardsContract(rewards_contract).seedAllocations(_week, _merkle_root, _amount)
 
@@ -226,8 +225,8 @@ def unpause(_start_date: uint256, _new_allocations_limit: uint256):
     """
     assert msg.sender == self.owner, "manager: not permitted"
     
-    self._change_allocations_limit(_new_allocations_limit)
-    self.last_accounted_period_date = _start_date - rewards_period_duration
+    self._set_allocations_limit(_new_allocations_limit)
+    self.last_accounted_period_start_date = _start_date - rewards_period_duration
     self.is_paused = False
 
     log Unpaused(msg.sender)
@@ -249,12 +248,12 @@ def _out_of_funding_date() -> uint256:
         unaccounted_periods: uint256 = (accounted_allocations_limit - rewards_balance) / self.rewards_limit_per_period
         # incrementing unaccounted periods count to get the end of last period instead of the begining
         unaccounted_periods += 1
-        return self.last_accounted_period_date - unaccounted_periods * rewards_period_duration
+        return self.last_accounted_period_start_date - unaccounted_periods * rewards_period_duration
     
     unaccounted_periods: uint256 = (rewards_balance - accounted_allocations_limit) / self.rewards_limit_per_period
     # incrementing unaccounted periods count to get the end of last period instead of the begining
     unaccounted_periods += 1
-    return self.last_accounted_period_date + unaccounted_periods * rewards_period_duration
+    return self.last_accounted_period_start_date + unaccounted_periods * rewards_period_duration
 
 
 @external
@@ -280,7 +279,7 @@ def transfer_ownership(_to: address):
 
 
 @external
-def change_allocator(_new_allocator: address):
+def set_allocator(_new_allocator: address):
     """
     @notice Changes the allocator. Can only be called by the current owner.
     """

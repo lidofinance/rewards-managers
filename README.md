@@ -61,7 +61,7 @@ event RewardContractOwnershipTransfered:
     new_owner: address
 ```
 
-##### `change_allocator(_new_allocator: address)`
+##### `set_allocator(_new_allocator: address)`
 
 Changes `ALLOCATOR`. Can be called by owner only.
 
@@ -72,7 +72,7 @@ event AllocatorChanged:
     new_allocator: address
 ```
 
-##### `change_rewards_limit(_new_limit: uint256)`
+##### `set_rewards_limit(_new_limit: uint256)`
 
 Changes reward token limit per period `rewards_period_duration`. Can be called by owner only. 
 Updates current allocations limit and set rewards limit for next periods.
@@ -83,7 +83,7 @@ event RewardsLimitChanged:
     new_limit: uint256
 ```
 
-##### `change_allocations_limit(_new_allocations_limit: uint256)`
+##### `set_allocations_limit(_new_allocations_limit: uint256)`
 
 Sets new allocations limit for Reward contract.
 
