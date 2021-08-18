@@ -1,7 +1,7 @@
 # Balancer rewards manager
 
 This repository contains Lido reward manager contract for [Balancer Merkle Rewards contract](https://github.com/balancer-labs/balancer-v2-monorepo/blob/master/pkg/distributors/contracts/MerkleRedeem.sol).
-It periodically approves certain amount of LDO to be spendable by Balancer contract.
+It weekly approves certain amount of LDO to be spendable by Balancer contract.
 
 # Rewards Manager
 
@@ -50,6 +50,17 @@ event OwnerChanged:
     new_owner: address
 ```
 
+##### `transfer_rewards_contract(_to: address)`
+
+Changes `OWNER`. Can be called by owner only.
+
+Events:
+
+```vyper=
+event RewardContractOwnershipTransfered:
+    new_owner: address
+```
+
 ##### `change_allocator(_new_allocator: address)`
 
 Changes `ALLOCATOR`. Can be called by owner only.
@@ -82,8 +93,6 @@ event AllocationsLimitChanged:
     new_limit: uint256
 ```
 
-
-
 ##### `pause()`
 
 Stops updating allocations limit and rejects `seed_allocations` calls. Can be called by owner only.
@@ -94,9 +103,10 @@ event Paused:
     actor: address
 ```
 
-##### `unpause()`
+##### `unpause(_start_date: uint256, _new_allocations_limit: uint256)`
 
-Resumes updating allocations limit and allows `seed_allocations` calls. Can be called by owner only.
+Resumes updating allocations limit and allows `seed_allocations` calls.
+Updates contracts state with new start date and allocations limit. Can be called by owner only.
 
 Events:
 ```vyper=
@@ -104,9 +114,9 @@ event Unpaused:
     actor: address
 ```
 
-##### `recover_erc20(_token: address, _recipient: address = msg.sender)`
+##### `recover_erc20(_token: address, _amount: uint256, _recipient: address = msg.sender)`
 
-Transfers the whole balance of the given ERC20 token to the recipient. Can be called by owner only.
+Transfers the amount of the given ERC20 token to the recipient. Can be called by owner only.
 
 Events:
 ```vyper=

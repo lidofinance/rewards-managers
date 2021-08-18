@@ -301,7 +301,7 @@ def transfer_rewards_contract(_new_owner: address):
 
 
 @external
-def recover_erc20(_token: address, _amount: uint256, _recipient: address):
+def recover_erc20(_token: address, _amount: uint256, _recipient: address = msg.sender):
     """
     @notice
         Transfers specified amount of the given ERC20 token from self
