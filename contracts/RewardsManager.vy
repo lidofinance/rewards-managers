@@ -1,5 +1,5 @@
 # @version 0.2.15
-# @notice A manager contract for the FramingRewards contract.
+# @notice A manager contract for the FarmingRewards contract.
 # @license MIT
 from vyper.interfaces import ERC20
 
@@ -76,8 +76,8 @@ def is_rewards_period_finished() -> bool:
     """
     return self._is_rewards_period_finished(self.rewards_contract, self.gift_index)
 
-@external
 @view
+@external
 def out_of_funding_date() -> uint256:
     return self._period_finish(self.rewards_contract, self.gift_index)
 
