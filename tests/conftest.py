@@ -2,6 +2,10 @@ import pytest
 from brownie import ZERO_ADDRESS, RewardsManager, StubERC20, StubFarmingRewards
 from utils.config import ldo_token_address
 
+time_in_the_past = 1628687598
+gift_index = 1
+
+
 @pytest.fixture(scope="function")
 def rewards_manager(ape):
     return RewardsManager.deploy({"from": ape})
@@ -14,7 +18,7 @@ def rewards_token(ape):
 
 @pytest.fixture(scope="function")
 def farming_rewards(ape):
-    return StubFarmingRewards.deploy(100, 1, 1628687598, {"from": ape})
+    return StubFarmingRewards.deploy(100, 1, time_in_the_past, {"from": ape})
 
 
 @pytest.fixture(scope="module")
@@ -30,4 +34,9 @@ def stranger(accounts):
 @pytest.fixture(scope="function")
 def set_rewards_contract(ape, farming_rewards, rewards_manager):
     rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
+
+
+@pytest.fixture(scope="function")
+def set_gift_index(ape, gift_index):
+    rewards_manager.set_gift_index(gift_index, {"from": ape})
 
