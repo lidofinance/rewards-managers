@@ -20,7 +20,7 @@ networks:
       accounts: 10
       evm_version: istanbul
       mnemonic: brownie
-      # fork: mainnet
+      fork: mainnet
 reports:
   exclude_contracts:
     - Address
@@ -31,6 +31,6 @@ reports:
   only_include_project: false
 compiler:
   solc:
-    version: 0.5.17
+    version: 0.6.12
   vyper:
     version: 0.2.15
