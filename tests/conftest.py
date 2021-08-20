@@ -64,6 +64,6 @@ def set_rewards_contract(ape, farming_rewards, rewards_manager):
 
 
 @pytest.fixture(scope="function")
-def set_gift_index(ape, rewards_manager, gift_index):
+def set_gift_index(ape, rewards_manager):
     rewards_manager.set_gift_index(gift_index, {"from": ape})
 
