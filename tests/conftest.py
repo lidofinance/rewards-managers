@@ -1,5 +1,5 @@
 import pytest
-from brownie import ZERO_ADDRESS, RewardsManager, StubERC20, StubFarmingRewards
+from brownie import ZERO_ADDRESS, RewardsManager, StubFarmingRewards, chain
 from utils.config import ldo_token_address
 
 time_in_the_past = 1628687598
@@ -12,13 +12,8 @@ def rewards_manager(ape):
 
 
 @pytest.fixture(scope="function")
-def rewards_token(ape):
-    return StubERC20.deploy("Lido DAO Token", "LDO", 250000, {"from": ape})
-
-
-@pytest.fixture(scope="function")
 def farming_rewards(ape):
-    return StubFarmingRewards.deploy(100, 1, time_in_the_past, {"from": ape})
+    return StubFarmingRewards.deploy(100, gift_index, time_in_the_past, {"from": ape})
 
 
 @pytest.fixture(scope="module")
@@ -29,6 +24,11 @@ def ape(accounts):
 @pytest.fixture(scope="module")
 def stranger(accounts):
     return accounts[1]
+
+
+@pytest.fixture(scope="module")
+def ldo_token(interface):
+    return interface.ERC20(ldo_token_address)
 
 
 @pytest.fixture(scope="function")
