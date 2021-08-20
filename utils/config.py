@@ -7,6 +7,7 @@ dai_address = "0x6b175474e89094c44da98b954eedeac495271d0f"
 steth_token_address = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
 one_inch_token_address = "0x111111111117dc0aa78b770fa6a738034120c302"
 lido_dao_token_manager_address = "0xf73a1260d222f447210581DDf212D915c09a3249"
+steth_token_kernel = "0xb8ffc3cd6e7cf5a098a1c92f48009765b24088dc"
 
 
 '''
