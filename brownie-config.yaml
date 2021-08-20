@@ -1,5 +1,5 @@
 networks:
-  default: development
+  default: mainnet-fork
   development:
     cmd: ganache-cli
     host: http://127.0.0.1

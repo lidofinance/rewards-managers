@@ -1,7 +1,7 @@
 import pytest
-from brownie import RewardsManager, reverts, ZERO_ADDRESS, chain, StubFarmingRewards
+from brownie import reverts, ZERO_ADDRESS, chain
 import web3
-from conftest import gift_index, ldo_token, stranger, time_in_the_past
+from conftest import gift_index
 from utils.config import ldo_token_address
 
 
@@ -58,19 +58,15 @@ def test_owner_can_set_gift_index(rewards_manager, ape):
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
-def test_is_rewards_period_finished_in_the_past(rewards_manager):
-    assert (chain[-1].timestamp >= time_in_the_past) == rewards_manager.is_rewards_period_finished()
-
-
-def test_is_rewards_period_finished_in_the_future(rewards_manager, ape):
-    farmer_rewards_future = StubFarmingRewards.deploy(100, gift_index, chain[-1].timestamp * 3600 * 24 * 365, {"from": ape})
-    rewards_manager.set_rewards_contract(farmer_rewards_future, {"from": ape})
-    assert (chain[-1].timestamp >= time_in_the_past) != rewards_manager.is_rewards_period_finished()
+def test_is_rewards_period_finished(rewards_manager, farming_rewards):
+    reward = farming_rewards.tokenRewards(gift_index)
+    assert (chain[-1].timestamp >= reward[4]) == rewards_manager.is_rewards_period_finished()
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
-def test_out_of_funding_date(rewards_manager):
-    assert time_in_the_past == rewards_manager.out_of_funding_date()
+def test_out_of_funding_date(rewards_manager, farming_rewards):
+    reward = farming_rewards.tokenRewards(gift_index)
+    assert reward[4] == rewards_manager.out_of_funding_date()
 
 
 def test_start_next_rewards_period_with_zero_address_and_gift_index(rewards_manager, ape):
