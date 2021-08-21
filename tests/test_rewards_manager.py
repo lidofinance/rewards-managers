@@ -1,7 +1,6 @@
 import pytest
 from brownie import reverts, ZERO_ADDRESS, chain, accounts
-import web3
-from utils.config import ldo_token_address, lido_dao_agent_address
+from utils.config import lido_dao_agent_address
 
 
 def test_owner_is_deployer(rewards_manager, ape):
@@ -56,8 +55,8 @@ def test_owner_can_set_gift_index(rewards_manager, ape, gift_index):
 
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_is_rewards_period_finished(rewards_manager, farming_rewards, gift_index):
-    assert (chain[-1].timestamp >= farming_rewards.tokenRewards(gift_index)[4]) == rewards_manager.is_rewards_period_finished()
+def test_stranger_can_check_is_rewards_period_finished(rewards_manager, stranger):
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
@@ -65,24 +64,51 @@ def test_out_of_funding_date(rewards_manager, farming_rewards, gift_index):
     assert farming_rewards.tokenRewards(gift_index)[4] == rewards_manager.out_of_funding_date()
 
 
-def test_start_next_rewards_period_reverts_with_zero_contract_address(rewards_manager, ape):
+def test_stranger_cannot_start_next_rewards_period_without_rewards_contract_set(rewards_manager, stranger):
     with reverts("manager: rewards disabled"):
-        rewards_manager.start_next_rewards_period({"from": ape})
+        rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_start_next_rewards_period_reverts_with_zero_balance(rewards_manager, ldo_token, ape):
-    assert ldo_token.balanceOf(rewards_manager) == 0
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_stranger_cannot_start_next_rewards_period_with_zero_amount(rewards_manager, stranger):
     with reverts("manager: rewards disabled"):
-        rewards_manager.start_next_rewards_period({"from": ape})
+        rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_start_next_rewards_period_reverts_with_rewards_period_is_not_finished(rewards_manager, farming_rewards, gift_index, ldo_token, ape):
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, stranger):
     ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
     assert ldo_token.balanceOf(rewards_manager) > 0
-    print(farming_rewards.tokenRewards(gift_index))          # FIXME to be deleted
-    with reverts("manager: rewards period not finished"):
-        rewards_manager.start_next_rewards_period({"from": ape})
+    print(ldo_token.balanceOf(rewards_manager))
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    rewards_manager.start_next_rewards_period({"from": stranger})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
-        # (chain[-1].timestamp >= farming_rewards.tokenRewards(gift_index)[4]) != rewards_manager.is_rewards_period_finished()
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_stranger_can_not_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, stranger):
+    ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    rewards_manager.start_next_rewards_period({"from": stranger})
+    chain.sleep(1)
+    chain.mine()
+
+    ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
+    with reverts("manager: rewards period not finished"):
+        rewards_manager.start_next_rewards_period({"from": stranger})
+
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, stranger):
+    ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    rewards_manager.start_next_rewards_period({"from": stranger})
+    chain.sleep(100000)
+    chain.mine()
+
+    ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    rewards_manager.start_next_rewards_period({"from": stranger})
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
+

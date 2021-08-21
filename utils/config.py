@@ -6,6 +6,7 @@ ldo_token_address = "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
 dai_address = "0x6b175474e89094c44da98b954eedeac495271d0f"
 steth_token_address = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
 one_inch_token_address = "0x111111111117dc0aa78b770fa6a738034120c302"
+one_inch_token_owner = "0x5E89f8d81C74E311458277EA1Be3d3247c7cd7D1"
 lido_dao_agent_address = "0x3e40D73EB977Dc6a537aF587D48316feE66E9C8c"
 steth_token_kernel = "0xb8ffc3cd6e7cf5a098a1c92f48009765b24088dc"
 
