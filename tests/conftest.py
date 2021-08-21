@@ -19,8 +19,8 @@ def mooniswap(ape, mooniswap_factory):
 
 
 @pytest.fixture(scope="function")
-def farming_rewards(ape, mooniswap, steth_token, distributor, rewards_manager):
-    farming_rewards_contract = FarmingRewards.deploy(mooniswap, steth_token, 100000, distributor, 10, {"from": ape})
+def farming_rewards(ape, mooniswap, steth_token, rewards_manager):
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, steth_token, 100000, rewards_manager, 10, {"from": ape})
     farming_rewards_contract.addGift(ldo_token_address, 100000, rewards_manager, 10, {"from": ape})
     return farming_rewards_contract
 
