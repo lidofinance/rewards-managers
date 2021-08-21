@@ -81,10 +81,10 @@ def test_start_next_rewards_period_with_zero_balance(rewards_manager, ldo_token,
 
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_start_next_rewards_period_with_rewards_period_not_finished(rewards_manager, farming_rewards, ldo_token, ape):
+def test_start_next_rewards_period_with_rewards_period_not_finished(rewards_manager, farming_rewards, gift_index, ldo_token, ape):
     ldo_token.transfer(rewards_manager, 100, {"from": accounts.at(lido_dao_agent_address, force=True)})
     assert ldo_token.balanceOf(rewards_manager) > 0
-    print(rewards_manager.out_of_funding_date())
+    print(farming_rewards.tokenRewards(gift_index))          # FIXME to be deleted
     with reverts("manager: rewards period not finished"):
         rewards_manager.start_next_rewards_period({"from": ape})
 

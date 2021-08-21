@@ -67,4 +67,10 @@ def set_gift_index(ape, rewards_manager, gift_index):
 
 @pytest.fixture(scope="function")
 def gift_index(farming_rewards, rewards_manager):
-    return 1  # to be changed
+    idx = 0
+    for i in range(10000):     # could be changed
+        if farming_rewards.tokenRewards(i)[0] == ldo_token_address:
+            idx = i
+            break
+    return idx
+
