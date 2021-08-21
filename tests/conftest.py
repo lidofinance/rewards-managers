@@ -1,9 +1,6 @@
 import pytest
-from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance, chain
+from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance
 from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address
-
-time_in_the_past = 1628687598
-gift_index = 1
 
 
 @pytest.fixture(scope="function")
@@ -23,9 +20,9 @@ def mooniswap(ape, mooniswap_factory):
 
 @pytest.fixture(scope="function")
 def farming_rewards(ape, mooniswap, steth_token, distributor, rewards_manager):
-    contract = FarmingRewards.deploy(mooniswap, steth_token, 100000, distributor, 10, {"from": ape})
-    contract.addGift(ldo_token_address, 100000, rewards_manager, 10, {"from": ape})
-    return contract
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, steth_token, 100000, distributor, 10, {"from": ape})
+    farming_rewards_contract.addGift(ldo_token_address, 100000, rewards_manager, 10, {"from": ape})
+    return farming_rewards_contract
 
 
 @pytest.fixture(scope="module")
@@ -64,6 +61,10 @@ def set_rewards_contract(ape, farming_rewards, rewards_manager):
 
 
 @pytest.fixture(scope="function")
-def set_gift_index(ape, rewards_manager):
+def set_gift_index(ape, rewards_manager, gift_index):
     rewards_manager.set_gift_index(gift_index, {"from": ape})
 
+
+@pytest.fixture(scope="function")
+def gift_index(farming_rewards, rewards_manager):
+    return 1  # to be changed
