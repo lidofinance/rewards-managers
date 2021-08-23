@@ -5,7 +5,7 @@
   "author": "Folks from Mad Devs",
   "license": "MIT",
   "dependencies": {
-    "ethlint": "^1.2.5",
+    "ethlint": "^0.0.0",
     "husky": "^6.0.0",
     "prettier": "^2.3.0",
     "prettier-plugin-solidity": "^1.0.0-beta.10",
