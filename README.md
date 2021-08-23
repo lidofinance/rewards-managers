@@ -23,9 +23,6 @@ Flattened version of 1inch [FarmingRewards](https://github.com/1inch/liquidity-p
 - Used only for the tests.
 - Entities expected to be deployed prior to `RewardsManager.vy`.
 
-### `Mocks.sol`
-Custom contracts, stubs, mocks and whatever else, that is needed to support simulation and tests. Not intended to be used in production.
-
 ## Installation
 To use the tools provided by this project, please pull the repository from GitHub and install its dependencies as follows. It is recommended to use a Python virtual environment.
 ```bash
