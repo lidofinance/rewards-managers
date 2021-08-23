@@ -1,72 +1,48 @@
 # LIDO / 1inch co-incentivization integration
 
+Smart-contracts that implements rewarding management for 1inch liquidity pool (a part of co-incentivization).
+
 ## Flow
 Deployment, initalization and usage flows are described in separate [FLOW document](./FLOW.md).
 
-## Components versions
-- solc: 0.6.12
-- truffle: 5.4.3
-- ganache-core: 2.13.0
-- solidity-coverage: 0.7.16
+## Core contracts
 
-## Prerequisites
-- Install [NodeJS 12](https://nodejs.org/en/) or higher with NPM (or use [NVM](https://github.com/nvm-sh/nvm)).
-- Install [Ganache CLI](https://www.npmjs.com/package/ganache-cli):
-  ```bash
-  npm install -g ganache-cli
-  ```
+### `RewardsManager.vy`
+Contract follows principles from other repositories: [lidofinance/staking-rewards-manager](https://github.com/lidofinance/staking-rewards-manager), [lidofinance/balancer-rewards-manager](https://github.com/lidofinance/balancer-rewards-manager) and [lidofinance/staking-rewards-sushi](https://github.com/lidofinance/staking-rewards-sushi).
+
+Following parts are adapted for compatibility with 1inch [liquidity protocol](https://github.com/1inch/liquidity-protocol) [`FarmingRewards`](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol) contract:
+- Added `gift_index` state variable and corresponding setter `set_gift_index()`. This is due to `FarmingRewards` contract requires manager contract to be aware of gift index (value dependends on order of [`addGift()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L144-L161) call).
+- Method `_period_finish()` adapted to obtain data from [`FarmingRewards.TokenRewards`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L28) structure, that stores referenced reward data in [`FarmingRewards.tokenRewards`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L36) state variable (of array type).
+- Method `start_next_rewards_period()` adapted to transfer reward tokens to `FarmingRewards` instance address and trigger [`FarmingRewards.notifyRewardAmount()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L96-L120) method. Key points:
+  - [`FarmingRewards.notifyRewardAmount()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L113) requires tokens to be already transfered to `FarmingRewards` instance address.
+  - Tokens are [unable to be recovered](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol#L175-L177) after the operation.
+
+### `Vendor.sol`
+Flattened version of 1inch [FarmingRewards](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol) and [MooniswapFactoryGovernance](https://github.com/1inch/liquidity-protocol/blob/master/contracts/governance/MooniswapFactoryGovernance.sol). This is considered as a vendor code:
+- Not supposed to have any local changes.
+- Used only for the tests.
+- Entities expected to be deployed prior to `RewardsManager.vy`.
 
 ## Installation
+To use the tools provided by this project, please pull the repository from GitHub and install its dependencies as follows. It is recommended to use a Python virtual environment.
 ```bash
 npm install
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements-dev.txt
 ```
-
-## Structure
-```text
-├── build                         # Truffle artifacts
-├── coverage                      # Coverage reports
-├── contracts                     # Smart-contract implementations (solidity sources)
-│     ├── Migrations.sol          # Common truffle migrations source
-│     ├── Mocks.sol               # Custom contracts that are mocks or helpers to support flow simulation
-│     ├── RewardsManager.sol      # Reward manager implementation
-│     └── Vendor.sol              # Fattened source of 1INCH rewards farming contract and it's dependencies
-├── migrations                    # Deployment script
-│     └── 1_initial_migration.js  # Migrations contract deployment script
-├── package.json                  # NPM dependencies and project configuration file
-├── README.md                     # Project README file
-├── test                          # Acceptance tests
-│     ├── flow.spec.js            # Full flow simulation
-│     └── rewards_manager.spec.js # Unit tests for RewardManager contract
-└── truffle-config.js             # Truffle project configuration file
-```
-Key points:
-- Flow simulation is in [`test/flow.spec.js`](https://github.com/maddevsio/lido/blob/main/test/flow.spec.js) file.
-- Contract sources are in [`contracts`](https://github.com/maddevsio/lido/tree/main/contracts) directory:
-  - [`Vendor.sol`](https://github.com/maddevsio/lido/blob/main/contracts/Vendor.sol) - flattened version of 1inch [FarmingRewards](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol) and [MooniswapFactoryGovernance](https://github.com/1inch/liquidity-protocol/blob/master/contracts/governance/MooniswapFactoryGovernance.sol).
-  - [`Mocks.sol`](https://github.com/maddevsio/lido/blob/main/contracts/Mocks.sol) - custom contracts, stubs, mocks and whatever else, that is created by us to support simulation. Not intended to be used in production.
-  - [`RewardsManager.sol`](https://github.com/maddevsio/lido/blob/main/contracts/RewardsManager.sol) - reward manager implementation that is intended to deploy and be used for the integration.
-
-## Performing simulation
-- In terminal 1:
-  ```bash
-  npm run ganache
-  ```
-- In terminal 2:
-  ```bash
-  npm run compile # if any Solidity sources were changed
-  npm test
-  ```
-
-It is better to restart Ganache CLI after test runs to have clean environment.
-
-## Test coverage
-Use following command to generate tests coverage reports:
+Compile the smart contracts:
 ```bash
-npm run coverage
+brownie compile # add `--size` to see contract compiled sizes
 ```
 
-## Tools
-To flatten Solidity sources [solc-typed-ast](https://github.com/ConsenSys/solc-typed-ast/) may be used in following way:
+## Test
+To test on a local development network run:
 ```bash
-sol-ast-compile path/to/file.sol --source
+brownie test
+```
+To test on mainnet fork you neet to set your [Infura](https://infura.io/product/ethereum) project ID first:
+```bash
+export WEB3_INFURA_PROJECT_ID=YourProjectID
+brownie test --network mainnet-fork
 ```

@@ -1,5 +1,12 @@
-build/
-coverage/
-node_modules/
-coverage.json
+__pycache__
+.history
+.hypothesis/
+.pytest_cache/
 .vscode/
+build/
+reports/
+venv/
+node_modules/
+bin/
+.DS_Store
+.env
