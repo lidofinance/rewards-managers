@@ -111,4 +111,6 @@ def recover_erc20(_token: address, _amount: uint256, _recipient: address = msg.s
     assert msg.sender == self.owner, "not permitted"
 
     assert _amount != 0, "zero amount"
+
+    assert ERC20(_token).balanceOf(self) >= _amount, "balance too low"
     assert ERC20(_token).transfer(_recipient, _amount), "token transfer failed"

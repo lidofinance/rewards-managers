@@ -135,11 +135,18 @@ def test_stranger_cannot_recover_erc20(rewards_manager, ldo_token, stranger):
 def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
     assert ldo_token.balanceOf(rewards_manager) == 0
 
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_owner_cannot_recover_erc20_when_balance_too_low(rewards_manager, ldo_token, ape):
+    assert ldo_token.balanceOf(rewards_manager) == 0
+
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     assert ldo_token.balanceOf(rewards_manager) == rewards_amount
 
     rewards_manager.recover_erc20(ldo_token, rewards_amount, {"from": ape})
     assert ldo_token.balanceOf(ape) == rewards_amount
+    with reverts("balance too low"):
+        rewards_manager.recover_erc20(ldo_token, rewards_amount + 10, {"from": ape})
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
