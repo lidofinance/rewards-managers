@@ -1,6 +1,6 @@
 import pytest
 from brownie import reverts, ZERO_ADDRESS, chain, accounts
-from utils.config import lido_dao_agent_address
+from utils.config import lido_dao_agent_address, rewards_amount
 
 
 def test_owner_is_deployer(rewards_manager, ape):
@@ -80,7 +80,7 @@ def test_stranger_cannot_start_next_rewards_period_with_zero_amount(rewards_mana
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
 def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, stranger):
-    ldo_token.transfer(rewards_manager, 200000, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
 
     assert ldo_token.balanceOf(rewards_manager) > 0
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
@@ -91,10 +91,10 @@ def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, strange
 
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_stranger_can_not_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, stranger):
+def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, 200000, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
     chain.sleep(1)
@@ -102,7 +102,7 @@ def test_stranger_can_not_start_next_rewards_period_while_current_is_active(rewa
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
-    ldo_token.transfer(rewards_manager, 200000, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
 
     with reverts("manager: rewards period not finished"):
         rewards_manager.start_next_rewards_period({"from": stranger})
@@ -112,7 +112,7 @@ def test_stranger_can_not_start_next_rewards_period_while_current_is_active(rewa
 def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, 200000, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
     chain.sleep(1000000)
@@ -120,8 +120,40 @@ def test_stranger_can_start_next_rewards_period_after_current_is_finished(reward
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, 200000, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
+
+def test_stranger_cannot_recover_erc20(rewards_manager, ldo_token, stranger):
+    with reverts("not permitted"):
+        rewards_manager.recover_erc20(ldo_token, 0, {"from": stranger})
+
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
+    assert ldo_token.balanceOf(rewards_manager) == 0
+
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+    rewards_manager.recover_erc20(ldo_token, rewards_amount, {"from": ape})
+    assert ldo_token.balanceOf(ape) == rewards_amount
+
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_owner_cannot_recover_zero_amount_of_erc20(rewards_manager, ldo_token, ape):
+    with reverts():
+        rewards_manager.recover_erc20(ldo_token, 0, {"from": ape})
+
+
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_owner_recovers_erc20_to_stranger_address(rewards_manager, ldo_token, ape, stranger):
+    assert ldo_token.balanceOf(rewards_manager) == 0
+
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+    rewards_manager.recover_erc20(ldo_token, rewards_amount, stranger, {"from": ape})
+    assert ldo_token.balanceOf(stranger) == rewards_amount

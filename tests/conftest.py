@@ -1,6 +1,6 @@
 import pytest
 from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance
-from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address
+from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address, rewards_amount
 
 
 @pytest.fixture(scope="function")
@@ -20,8 +20,8 @@ def mooniswap(ape, mooniswap_factory):
 
 @pytest.fixture(scope="function")
 def farming_rewards(ape, mooniswap, one_inch_token, ldo_token, rewards_manager):
-    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, 200000, ape, 10, {"from": ape})
-    farming_rewards_contract.addGift(ldo_token, 200000, rewards_manager, 10, {"from": ape})
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, 10, {"from": ape})
+    farming_rewards_contract.addGift(ldo_token, rewards_amount, rewards_manager, 10, {"from": ape})
     return farming_rewards_contract
 
 

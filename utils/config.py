@@ -20,6 +20,7 @@ lido_dao_voting_address = "0x2e59A20f205bB85a89C53f1936454680651E618e"
 '''
 
 gas_price = "90 gwei"
+rewards_amount = 200000
 
 
 def get_is_live():
