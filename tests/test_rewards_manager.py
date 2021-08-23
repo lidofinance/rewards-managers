@@ -144,7 +144,7 @@ def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
 
 @pytest.mark.usefixtures("set_rewards_contract")
 def test_owner_cannot_recover_zero_amount_of_erc20(rewards_manager, ldo_token, ape):
-    with reverts():
+    with reverts("zero amount"):
         rewards_manager.recover_erc20(ldo_token, 0, {"from": ape})
 
 
