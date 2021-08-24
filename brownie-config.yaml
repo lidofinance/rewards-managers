@@ -1,6 +1,6 @@
 networks:
-  default: mainnet-fork
-  mainnet-fork:
+  default: development
+  development:
     cmd: ganache-cli
     host: http://127.0.0.1
     timeout: 120
