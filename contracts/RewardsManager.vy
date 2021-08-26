@@ -3,9 +3,20 @@
 # @license MIT
 from vyper.interfaces import ERC20
 
+struct TokenReward:
+    gift_token: address
+    scale: uint256
+    duration: uint256
+    reward_distribution: address
+    period_finish: uint256
+    reward_rate: uint256
+    last_update_time: uint256
+    reward_per_token_stored: uint256
+
 interface FarmingRewards:
-    def tokenRewards(index: uint256) -> (address, uint256, uint256, address, uint256, uint256, uint256, uint256): view
+    def tokenRewards(index: uint256) -> TokenReward: view
     def notifyRewardAmount(index: uint256, reward: uint256): nonpayable
+
 
 owner: public(address)
 GIFT_INDEX: constant(uint256) = 1
@@ -39,19 +50,10 @@ def set_rewards_contract(_rewards_contract: address):
 @view
 @internal
 def _period_finish(rewards_contract: address) -> uint256:
-    # TODO: figure out if there is a more proper readable way to do this
-    gift_token: address = ZERO_ADDRESS
-    scale: uint256 = 0
-    duration: uint256 = 0
-    reward_distribution: address = ZERO_ADDRESS
-    period_finish_: uint256 = 0
-    reward_rate: uint256 = 0
-    last_update_time: uint256 = 0
-    reward_per_token_stored: uint256 = 0
+    
+    reward: TokenReward = FarmingRewards(rewards_contract).tokenRewards(GIFT_INDEX)
 
-    gift_token, scale, duration, reward_distribution, period_finish_, reward_rate, last_update_time, reward_per_token_stored = FarmingRewards(rewards_contract).tokenRewards(GIFT_INDEX)
-
-    return period_finish_
+    return reward.period_finish
 
 @view
 @internal
