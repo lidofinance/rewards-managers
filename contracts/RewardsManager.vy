@@ -18,6 +18,18 @@ interface FarmingRewards:
     def notifyRewardAmount(index: uint256, reward: uint256): nonpayable
 
 
+event OwnershipTransferred: 
+    previous_owner: indexed(address)
+    new_owner: indexed(address)
+
+event RewardsContractSet:
+    rewards_contract: indexed(address)
+
+event ERC20TokenRecovered:
+    token: indexed(address)
+    amount: uint256
+    recipient: indexed(address)
+
 owner: public(address)
 GIFT_INDEX: constant(uint256) = 1
 rewards_contract: public(address)
@@ -34,8 +46,11 @@ def transfer_ownership(_to: address):
         Changes the contract owner.
         Can only be called by the current owner.
     """
+    old_owner: address = self.owner
     assert msg.sender == self.owner, "not permitted"
     self.owner = _to
+
+    log OwnershipTransferred(old_owner, _to)
 
 @external
 def set_rewards_contract(_rewards_contract: address):
@@ -47,12 +62,12 @@ def set_rewards_contract(_rewards_contract: address):
     assert msg.sender == self.owner, "not permitted"
     self.rewards_contract = _rewards_contract
 
+    log RewardsContractSet(_rewards_contract)
+
 @view
 @internal
 def _period_finish(rewards_contract: address) -> uint256:
-    
     reward: TokenReward = FarmingRewards(rewards_contract).tokenRewards(GIFT_INDEX)
-
     return reward.period_finish
 
 @view
@@ -105,3 +120,6 @@ def recover_erc20(_token: address, _amount: uint256, _recipient: address = msg.s
 
     assert ERC20(_token).balanceOf(self) >= _amount, "balance too low"
     assert ERC20(_token).transfer(_recipient, _amount), "token transfer failed"
+
+    log ERC20TokenRecovered(_token, _amount, _recipient)
+
