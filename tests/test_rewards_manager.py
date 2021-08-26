@@ -1,6 +1,6 @@
 import pytest
 from brownie import reverts, ZERO_ADDRESS, chain, accounts
-from utils.config import lido_dao_agent_address, rewards_amount
+from utils.config import lido_dao_agent_address, rewards_amount, gift_index
 
 
 def test_owner_is_deployer(rewards_manager, ape):
@@ -31,6 +31,7 @@ def test_stranger_cannot_set_rewards_contract(rewards_manager, stranger):
     with reverts("not permitted"):
         rewards_manager.set_rewards_contract(ZERO_ADDRESS, {"from": stranger})
 
+
 @pytest.mark.usefixtures("set_rewards_contract")
 def test_owner_can_set_rewards_contract(rewards_manager, ape):
     assert rewards_manager.rewards_contract() != ZERO_ADDRESS
@@ -41,29 +42,12 @@ def test_owner_can_set_rewards_contract(rewards_manager, ape):
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
-def test_stranger_cannot_set_gift_index(rewards_manager, stranger, gift_index):
-    assert rewards_manager.gift_index() != gift_index
-
-    with reverts("not permitted"):
-        rewards_manager.set_gift_index(gift_index, {"from": stranger})
-
-
-@pytest.mark.usefixtures("set_rewards_contract")
-def test_owner_can_set_gift_index(rewards_manager, ape, gift_index):
-    assert rewards_manager.gift_index() != gift_index
-
-    rewards_manager.set_gift_index(gift_index, {"from": ape})
-
-    assert rewards_manager.gift_index() == gift_index
-
-
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
 def test_stranger_can_check_is_rewards_period_finished(rewards_manager, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_period_finish(rewards_manager, farming_rewards, gift_index):
+@pytest.mark.usefixtures("set_rewards_contract")
+def test_period_finish(rewards_manager, farming_rewards):
     assert farming_rewards.tokenRewards(gift_index)[4] == rewards_manager.period_finish()
 
 
@@ -72,13 +56,13 @@ def test_stranger_cannot_start_next_rewards_period_without_rewards_contract_set(
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
+@pytest.mark.usefixtures("set_rewards_contract")
 def test_stranger_cannot_start_next_rewards_period_with_zero_amount(rewards_manager, stranger):
     with reverts("manager: rewards disabled"):
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
+@pytest.mark.usefixtures("set_rewards_contract")
 def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, stranger):
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
 
@@ -90,7 +74,7 @@ def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, strange
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
+@pytest.mark.usefixtures("set_rewards_contract")
 def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
@@ -108,7 +92,7 @@ def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewar
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-@pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
+@pytest.mark.usefixtures("set_rewards_contract")
 def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 

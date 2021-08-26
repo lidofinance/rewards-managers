@@ -59,16 +59,3 @@ def one_inch_token(interface):
 def set_rewards_contract(ape, farming_rewards, rewards_manager):
     rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
 
-
-@pytest.fixture(scope="function")
-def set_gift_index(ape, rewards_manager, gift_index):
-    rewards_manager.set_gift_index(gift_index, {"from": ape})
-
-
-@pytest.fixture(scope="function")
-def gift_index(farming_rewards):
-    for i in range(10):     # could be changed
-        if farming_rewards.tokenRewards(i)[0] == ldo_token_address:
-            return i
-    return 0
-
