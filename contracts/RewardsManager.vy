@@ -54,14 +54,14 @@ def _period_finish(rewards_contract: address, gift_index: uint256) -> uint256:
     scale: uint256 = 0
     duration: uint256 = 0
     reward_distribution: address = ZERO_ADDRESS
-    period_finish: uint256 = 0
+    period_finish_: uint256 = 0
     reward_rate: uint256 = 0
     last_update_time: uint256 = 0
     reward_per_token_stored: uint256 = 0
 
-    gift_token, scale, duration, reward_distribution, period_finish, reward_rate, last_update_time, reward_per_token_stored = FarmingRewards(rewards_contract).tokenRewards(gift_index)
+    gift_token, scale, duration, reward_distribution, period_finish_, reward_rate, last_update_time, reward_per_token_stored = FarmingRewards(rewards_contract).tokenRewards(gift_index)
 
-    return period_finish
+    return period_finish_
 
 @view
 @internal
@@ -78,7 +78,7 @@ def is_rewards_period_finished() -> bool:
 
 @view
 @external
-def out_of_funding_date() -> uint256:
+def period_finish() -> uint256:
     return self._period_finish(self.rewards_contract, self.gift_index)
 
 @external

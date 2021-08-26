@@ -63,8 +63,8 @@ def test_stranger_can_check_is_rewards_period_finished(rewards_manager, stranger
 
 
 @pytest.mark.usefixtures("set_rewards_contract", "set_gift_index")
-def test_out_of_funding_date(rewards_manager, farming_rewards, gift_index):
-    assert farming_rewards.tokenRewards(gift_index)[4] == rewards_manager.out_of_funding_date()
+def test_period_finish(rewards_manager, farming_rewards, gift_index):
+    assert farming_rewards.tokenRewards(gift_index)[4] == rewards_manager.period_finish()
 
 
 def test_stranger_cannot_start_next_rewards_period_without_rewards_contract_set(rewards_manager, stranger):
