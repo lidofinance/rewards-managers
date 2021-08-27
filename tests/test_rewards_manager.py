@@ -13,9 +13,11 @@ def test_stranger_cannot_transfer_ownership(rewards_manager, stranger):
 
 
 def test_ownership_can_be_transferred(rewards_manager, ape, stranger):
-    rewards_manager.transfer_ownership(stranger, {"from": ape})
+    tx = rewards_manager.transfer_ownership(stranger, {"from": ape})
 
     assert rewards_manager.owner() == stranger
+    assert len(tx.events) == 1
+    assert tx.events[0]['new_owner'] == stranger
 
 
 def test_ownership_can_be_transferred_to_zero_address(rewards_manager, ape):
@@ -36,9 +38,11 @@ def test_stranger_cannot_set_rewards_contract(rewards_manager, stranger):
 def test_owner_can_set_rewards_contract(rewards_manager, ape):
     assert rewards_manager.rewards_contract() != ZERO_ADDRESS
 
-    rewards_manager.set_rewards_contract(ZERO_ADDRESS, {"from": ape})
+    tx = rewards_manager.set_rewards_contract(ZERO_ADDRESS, {"from": ape})
 
     assert rewards_manager.rewards_contract() == ZERO_ADDRESS
+    assert len(tx.events) == 1
+    assert tx.events[0]['rewards_contract'] == ZERO_ADDRESS
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
@@ -118,25 +122,6 @@ def test_stranger_cannot_recover_erc20(rewards_manager, ldo_token, stranger):
 @pytest.mark.usefixtures("set_rewards_contract")
 def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
     assert ldo_token.balanceOf(rewards_manager) == 0
-
-
-@pytest.mark.usefixtures("set_rewards_contract")
-def test_owner_cannot_recover_erc20_when_balance_too_low(rewards_manager, ldo_token, ape):
-    assert ldo_token.balanceOf(rewards_manager) == 0
-
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
-    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
-
-    rewards_manager.recover_erc20(ldo_token, rewards_amount, {"from": ape})
-    assert ldo_token.balanceOf(ape) == rewards_amount
-    with reverts("balance too low"):
-        rewards_manager.recover_erc20(ldo_token, rewards_amount + 10, {"from": ape})
-
-
-@pytest.mark.usefixtures("set_rewards_contract")
-def test_owner_cannot_recover_zero_amount_of_erc20(rewards_manager, ldo_token, ape):
-    with reverts("zero amount"):
-        rewards_manager.recover_erc20(ldo_token, 0, {"from": ape})
 
 
 @pytest.mark.usefixtures("set_rewards_contract")
