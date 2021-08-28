@@ -1,5 +1,5 @@
 import pytest
-from brownie import reverts, ZERO_ADDRESS, chain, accounts
+from brownie import reverts, ZERO_ADDRESS, chain, accounts, RewardsManager
 from utils.config import lido_dao_agent_address, rewards_amount, gift_index
 
 

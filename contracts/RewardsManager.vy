@@ -38,6 +38,8 @@ ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 @external
 def __init__():
     self.owner = msg.sender
+    log OwnershipTransferred(ZERO_ADDRESS, msg.sender)
+
 
 @external
 def transfer_ownership(_to: address):
@@ -47,7 +49,7 @@ def transfer_ownership(_to: address):
         Can only be called by the current owner.
     """
     old_owner: address = self.owner
-    assert msg.sender == self.owner, "not permitted"
+    assert msg.sender == old_owner, "not permitted"
     self.owner = _to
 
     log OwnershipTransferred(old_owner, _to)
