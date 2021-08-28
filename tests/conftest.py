@@ -1,6 +1,15 @@
 import pytest
 from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance
-from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address, rewards_amount
+from utils.config import (
+    ldo_token_address,
+    steth_token_address,
+    dai_address,
+    one_inch_token_address,
+    rewards_amount,
+    scale,
+    lido_dao_agent_address,
+    lido_dao_voting_address
+)
 
 
 @pytest.fixture(scope="function")
@@ -20,8 +29,8 @@ def mooniswap(ape, mooniswap_factory):
 
 @pytest.fixture(scope="function")
 def farming_rewards(ape, mooniswap, one_inch_token, ldo_token, rewards_manager):
-    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, 10, {"from": ape})
-    farming_rewards_contract.addGift(ldo_token, rewards_amount, rewards_manager, 10, {"from": ape})
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, scale, {"from": ape})
+    farming_rewards_contract.addGift(ldo_token, rewards_amount, rewards_manager, scale, {"from": ape})
     return farming_rewards_contract
 
 
@@ -36,11 +45,6 @@ def stranger(accounts):
 
 
 @pytest.fixture(scope="module")
-def distributor(accounts):
-    return accounts[2]
-
-
-@pytest.fixture(scope="module")
 def ldo_token(interface):
     return interface.ERC20(ldo_token_address)
 
@@ -51,8 +55,28 @@ def steth_token(interface):
 
 
 @pytest.fixture(scope="module")
+def dai_token(interface):
+    return interface.ERC20(dai_address)
+
+
+@pytest.fixture(scope="module")
 def one_inch_token(interface):
     return interface.ERC20(one_inch_token_address)
+
+
+@pytest.fixture(scope="module")
+def dao_voting_impersonated(accounts):
+    return accounts.at("0x2e59A20f205bB85a89C53f1936454680651E618e", force=True)
+
+
+@pytest.fixture(scope="module")
+def dao_voting(interface):
+    return interface.Voting(lido_dao_voting_address)
+
+
+@pytest.fixture(scope="module")
+def dao_agent(interface):
+    return interface.Agent(lido_dao_agent_address)
 
 
 @pytest.fixture(scope="function")
@@ -64,11 +88,9 @@ def set_rewards_contract(ape, farming_rewards, rewards_manager):
 def set_gift_index(ape, rewards_manager, gift_index):
     rewards_manager.set_gift_index(gift_index, {"from": ape})
 
-
 @pytest.fixture(scope="function")
 def gift_index(farming_rewards):
     for i in range(10):     # could be changed
         if farming_rewards.tokenRewards(i)[0] == ldo_token_address:
             return i
     return 0
-
