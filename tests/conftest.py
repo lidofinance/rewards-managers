@@ -1,11 +1,13 @@
 import pytest
 from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance
-from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address, rewards_amount
+from utils.config import ldo_token_address, steth_token_address, dai_address, one_inch_token_address, rewards_amount, scale
 
 
 @pytest.fixture(scope="function")
-def rewards_manager(ape):
-    return RewardsManager.deploy({"from": ape})
+def rewards_manager(ape, farming_rewards, ldo_token):
+    rewards_manager_contract = RewardsManager.deploy(farming_rewards, {"from": ape})
+    assert farming_rewards.addGift(ldo_token, rewards_amount, rewards_manager_contract, scale, {"from": ape})
+    return rewards_manager_contract
 
 
 @pytest.fixture(scope="function")
@@ -19,9 +21,8 @@ def mooniswap(ape, mooniswap_factory):
 
 
 @pytest.fixture(scope="function")
-def farming_rewards(ape, mooniswap, one_inch_token, ldo_token, rewards_manager):
-    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, 10, {"from": ape})
-    farming_rewards_contract.addGift(ldo_token, rewards_amount, rewards_manager, 10, {"from": ape})
+def farming_rewards(ape, mooniswap, one_inch_token):
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, scale, {"from": ape})
     return farming_rewards_contract
 
 
@@ -53,9 +54,3 @@ def steth_token(interface):
 @pytest.fixture(scope="module")
 def one_inch_token(interface):
     return interface.ERC20(one_inch_token_address)
-
-
-@pytest.fixture(scope="function")
-def set_rewards_contract(ape, farming_rewards, rewards_manager):
-    rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
-

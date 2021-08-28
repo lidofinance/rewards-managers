@@ -36,7 +36,10 @@ rewards_contract: public(address)
 ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 
 @external
-def __init__():
+def __init__(_rewards_contract: address):
+    assert _rewards_contract != ZERO_ADDRESS, "zero address"
+    self.rewards_contract = _rewards_contract
+
     self.owner = msg.sender
     log OwnershipTransferred(ZERO_ADDRESS, msg.sender)
 
@@ -54,17 +57,6 @@ def transfer_ownership(_to: address):
 
     log OwnershipTransferred(old_owner, _to)
 
-@external
-def set_rewards_contract(_rewards_contract: address):
-    """
-    @notice
-        Sets the FarmingRewards contract.
-        Can only be called by the owner.
-    """
-    assert msg.sender == self.owner, "not permitted"
-    self.rewards_contract = _rewards_contract
-
-    log RewardsContractSet(_rewards_contract)
 
 @view
 @internal
@@ -102,7 +94,7 @@ def start_next_rewards_period():
     rewards: address = self.rewards_contract
     amount: uint256 = ERC20(ldo_token).balanceOf(self)
 
-    assert rewards != ZERO_ADDRESS and amount != 0, "manager: rewards disabled"
+    assert amount != 0, "manager: rewards disabled"
     assert self._is_rewards_period_finished(rewards), "manager: rewards period not finished"
 
     assert ERC20(ldo_token).transfer(rewards, amount), "manager: unable to transfer reward tokens"
