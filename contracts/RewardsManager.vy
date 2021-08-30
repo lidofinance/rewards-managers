@@ -39,6 +39,7 @@ ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 def __init__(_rewards_contract: address):
     assert _rewards_contract != ZERO_ADDRESS, "zero address"
     self.rewards_contract = _rewards_contract
+    log RewardsContractSet(_rewards_contract)
 
     self.owner = msg.sender
     log OwnershipTransferred(ZERO_ADDRESS, msg.sender)
