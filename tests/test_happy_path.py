@@ -18,7 +18,7 @@ from utils.config import (
 # Test Case:
 # 0. Deploy dependency contracts (should be removed when they will be available on-chain)
 # 1. Deploy and configure rewards manager
-# 2. Reward faming contract adds LDO token as gift with reward manager as distributor
+# 2. Reward farming contract adds LDO token as gift with reward manager as distributor
 # 3. DAO transfers LDO to reward manager contract
 # 4. 1INCH distributor transfers tokens to farming contract directly
 # 5. Someone starts new reward period (1INCH via their distributor, LDO via reward manager)
@@ -55,7 +55,7 @@ def test_happy_path(
     rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
     rewards_manager.set_gift_index(1, {"from": ape})
 
-    # Reward faming contract adds LDO token as gift with reward manager as distributor
+    # Reward farming contract adds LDO token as gift with reward manager as distributor
     farming_rewards.addGift(ldo_token, rewards_amount, rewards_manager, scale, {"from": stranger})
 
     # DAO transfers LDO tokens to reward manager
