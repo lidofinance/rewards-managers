@@ -1,6 +1,7 @@
 import os
 import sys
 from brownie import network, accounts
+from brownie.convert.datatypes import Wei
 
 ldo_token_address = "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
 dai_address = "0x6b175474e89094c44da98b954eedeac495271d0f"
@@ -14,8 +15,8 @@ lp_token_address = "0xc5578194d457dcce3f272538d1ad52c68d1ce849"
 
 
 gas_price = "90 gwei"
-rewards_amount = 200000
-scale = 10
+rewards_amount = Wei("200000 ether")
+scale = Wei("10 ether")
 initial_rewards_duration_sec = 60 * 60 * 24 * 30 # one month
 
 

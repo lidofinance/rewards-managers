@@ -47,7 +47,7 @@ def test_happy_path(
     # Deploy dependency contracts (should be removed when they will be available on-chain)
     mooniswap_factory = MooniswapFactoryGovernance.deploy(ZERO_ADDRESS, {"from": stranger})
     mooniswap = Mooniswap.deploy(steth_token, dai_token, "stETH-DAI Liquidity Pool Token", "LP", mooniswap_factory, {"from": stranger})
-    farming_rewards = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, stranger, scale, {"from": stranger})
+    farming_rewards = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_period, stranger, scale, {"from": stranger})
 
     # Deploy and configure rewards manager
     rewards_manager = RewardsManager.deploy({"from": ape})
@@ -56,7 +56,7 @@ def test_happy_path(
     rewards_manager.set_gift_index(1, {"from": ape})
 
     # Reward farming contract adds LDO token as gift with reward manager as distributor
-    farming_rewards.addGift(ldo_token, rewards_amount, rewards_manager, scale, {"from": stranger})
+    farming_rewards.addGift(ldo_token, rewards_period, rewards_manager, scale, {"from": stranger})
 
     # DAO transfers LDO tokens to reward manager
     assert ldo_token.balanceOf(dao_agent) >= rewards_amount
@@ -128,8 +128,7 @@ def test_happy_path(
     chain.sleep(rewards_period // 2)
     chain.mine()
 
-    # TODO: This is not working for some weird reason. Investigate.
-    # assert rewards_manager.is_rewards_period_finished() == False
+    assert rewards_manager.is_rewards_period_finished() == False
 
     farming_rewards.exit({"from": user_a})
 
