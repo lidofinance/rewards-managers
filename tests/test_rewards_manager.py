@@ -115,7 +115,7 @@ def test_stranger_can_start_next_rewards_period_after_current_is_finished(reward
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
-    chain.sleep(1000000)
+    chain.sleep(60 * 60 * 24 * 30 * 2)
     chain.mine()
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
