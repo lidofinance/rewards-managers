@@ -40,5 +40,14 @@ brownie compile # add `--size` to see contract compiled sizes
 To test on mainnet fork you neet to set your [Infura](https://infura.io/product/ethereum) project ID first:
 ```bash
 export WEB3_INFURA_PROJECT_ID=YourProjectID
+```
+
+Run tests only:
+```bash
 brownie test
+```
+
+Run tests with evaluating coverage and gas usage:
+```bash
+brownie test --coverage --gas -v
 ```
