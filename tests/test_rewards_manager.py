@@ -3,8 +3,12 @@ from brownie import reverts, ZERO_ADDRESS, chain, accounts, RewardsManager
 from utils.config import lido_dao_agent_address, rewards_amount, gift_index
 
 
-def test_owner_is_deployer(rewards_manager, ape):
+def test_owner_is_deployer(rewards_manager, farming_rewards, ape):
     assert rewards_manager.owner() == ape
+    assert len(rewards_manager.tx.events) == 2
+    assert rewards_manager.tx.events['RewardsContractSet']['rewards_contract'] == farming_rewards
+    assert rewards_manager.tx.events['OwnershipTransferred']['previous_owner'] == ZERO_ADDRESS
+    assert rewards_manager.tx.events['OwnershipTransferred']['new_owner'] == ape
 
 
 def test_rewards_contract_address_is_not_zero(ape):
@@ -18,12 +22,11 @@ def test_stranger_cannot_transfer_ownership(rewards_manager, stranger):
 
 
 def test_ownership_can_be_transferred(rewards_manager, ape, stranger):
-    assert rewards_manager.owner() != stranger
-    
     tx = rewards_manager.transfer_ownership(stranger, {"from": ape})
 
     assert rewards_manager.owner() == stranger
     assert len(tx.events) == 1
+    assert tx.events['OwnershipTransferred']['previous_owner'] == ape
     assert tx.events['OwnershipTransferred']['new_owner'] == stranger
 
 
@@ -102,7 +105,12 @@ def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     assert ldo_token.balanceOf(rewards_manager) == rewards_amount
 
-    rewards_manager.recover_erc20(ldo_token, rewards_amount, ape, {"from": ape})
+    tx = rewards_manager.recover_erc20(ldo_token, rewards_amount, ape, {"from": ape})
+    assert len(tx.events) == 1
+    assert tx.events['ERC20TokenRecovered']['token'] == ldo_token
+    assert tx.events['ERC20TokenRecovered']['amount'] == rewards_amount
+    assert tx.events['ERC20TokenRecovered']['recipient'] == ape
+    
     assert ldo_token.balanceOf(ape) == rewards_amount
 
 
@@ -112,5 +120,10 @@ def test_owner_recovers_erc20_to_stranger_address(rewards_manager, ldo_token, ap
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
     assert ldo_token.balanceOf(rewards_manager) == rewards_amount
 
-    rewards_manager.recover_erc20(ldo_token, rewards_amount, stranger, {"from": ape})
+    tx = rewards_manager.recover_erc20(ldo_token, rewards_amount, stranger, {"from": ape})
+    assert len(tx.events) == 1
+    assert tx.events['ERC20TokenRecovered']['token'] == ldo_token
+    assert tx.events['ERC20TokenRecovered']['amount'] == rewards_amount
+    assert tx.events['ERC20TokenRecovered']['recipient'] == stranger
+
     assert ldo_token.balanceOf(stranger) == rewards_amount
