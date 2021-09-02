@@ -19,6 +19,7 @@ lido_dao_finance_address = "0xB9E5CBB9CA5b0d659238807E84D0176930753d86"
 lido_dao_voting_address = "0x2e59A20f205bB85a89C53f1936454680651E618e"
 '''
 
+gift_index = 1
 gas_price = "90 gwei"
 rewards_amount = 200000
 scale = 10
