@@ -25,13 +25,13 @@
     - Initial gift distribution is TBD, but expected to be related to 1INCH.
     - Initial gift reserves index `0` in [`tokenRewards`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L36) array.
 7. `RewardsManager` is deployed:
-    - Expected gift index is set to `1`.
+    - `GIFT_INDEX` constant value is set to `1`.
     - Target rewards contract is previously deployed `FarmingRewards`.
     - Target rewards token is **LDO token**.
 8. `FarmingRewards` owner adds new gift (calls [`addGift()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L144-L161)):
     - Gift token is **LDO**.
     - Gift distribution is `RewardsManager`.
-    - Gift is REQUIRED to be at index `1` in [`tokenRewards`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L36) array (this MUST match with `gift_index` value in `RewardsManager`).
+    - Gift is REQUIRED to be at index `1` in [`tokenRewards`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L36) array (this MUST match with `GIFT_INDEX` constant value in `RewardsManager`).
     - Gift `scale` and `duration` have to be determined **carefully**:
         - Method [`addGift()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L144-L161) has a very basic check for `scale` and no check for duration.
         - Method [`notifyRewardAmount()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L96-L120) has more strong math-based checks. This means that if gift added with improper `scale` and `duration`, then [`notifyRewardAmount()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L96-L120) will not allow to start rewarding period until these parameters are properly adjusted via [`setDuration()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L128-L133) and/or [`setScale()`](https://github.com/1inch/liquidity-protocol/blob/d0c38df6703ac965dacbe09a9c61a5f8366152f1/contracts/utils/BaseRewards.sol#L135-L142).

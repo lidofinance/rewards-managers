@@ -1,38 +1,35 @@
 import pytest
-from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, Mooniswap, MooniswapFactoryGovernance
+from brownie import ZERO_ADDRESS, RewardsManager
 from utils.config import (
-    initial_rewards_duration_sec,
+    gift_index,
     ldo_token_address,
     steth_token_address,
     dai_address,
     one_inch_token_address,
-    rewards_amount,
-    scale,
     lido_dao_agent_address,
-    lido_dao_voting_address
+    farming_rewards_address,
+    farming_rewards_owner,
+    mooniswap_address
 )
 
 
 @pytest.fixture(scope="function")
-def rewards_manager(ape):
-    return RewardsManager.deploy({"from": ape})
+def rewards_manager(ape, farming_rewards):
+    manager = RewardsManager.deploy(farming_rewards, {"from": ape})
+
+    farming_rewards.setRewardDistribution(gift_index, manager, {"from": farming_rewards_owner})
+
+    return manager
 
 
 @pytest.fixture(scope="function")
-def mooniswap_factory(ape):
-    return MooniswapFactoryGovernance.deploy(ZERO_ADDRESS, {"from": ape})
+def mooniswap(interface):
+    return interface.Mooniswap(mooniswap_address)
 
 
 @pytest.fixture(scope="function")
-def mooniswap(ape, mooniswap_factory):
-    return Mooniswap.deploy(steth_token_address, dai_address, "stETH-DAI Liquidity Pool Token", "LP", mooniswap_factory, {"from": ape})
-
-
-@pytest.fixture(scope="function")
-def farming_rewards(ape, mooniswap, one_inch_token, ldo_token, rewards_manager):
-    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_amount, ape, scale, {"from": ape})
-    farming_rewards_contract.addGift(ldo_token, initial_rewards_duration_sec, rewards_manager, scale, {"from": ape})
-    return farming_rewards_contract
+def farming_rewards(interface):
+    return interface.FarmingRewards(farming_rewards_address)
 
 
 @pytest.fixture(scope="module")
@@ -71,27 +68,5 @@ def dao_voting_impersonated(accounts):
 
 
 @pytest.fixture(scope="module")
-def dao_voting(interface):
-    return interface.Voting(lido_dao_voting_address)
-
-
-@pytest.fixture(scope="module")
 def dao_agent(interface):
     return interface.Agent(lido_dao_agent_address)
-
-
-@pytest.fixture(scope="function")
-def set_rewards_contract(ape, farming_rewards, rewards_manager):
-    rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
-
-
-@pytest.fixture(scope="function")
-def set_gift_index(ape, rewards_manager, gift_index):
-    rewards_manager.set_gift_index(gift_index, {"from": ape})
-
-@pytest.fixture(scope="function")
-def gift_index(farming_rewards):
-    for i in range(10):     # could be changed
-        if farming_rewards.tokenRewards(i)[0] == ldo_token_address:
-            return i
-    return 0

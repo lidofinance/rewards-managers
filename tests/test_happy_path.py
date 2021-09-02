@@ -1,24 +1,15 @@
-from brownie import (
-    Wei,
-    chain,
-    ZERO_ADDRESS,
-    RewardsManager,
-    Mooniswap,
-    MooniswapFactoryGovernance,
-    FarmingRewards,
-);
-
+from brownie import Wei, chain, RewardsManager
 from utils.config import (
+    gift_index,
     one_inch_token_owner,
+    farming_rewards_owner,
     initial_rewards_duration_sec,
     rewards_amount,
-    scale
 )
 
 # Test Case:
-# 0. Deploy dependency contracts (should be removed when they will be available on-chain)
 # 1. Deploy and configure rewards manager
-# 2. Reward farming contract adds LDO token as gift with reward manager as distributor
+# 2. Reward farming contract sets reward manager as distributor for LDO token gift
 # 3. DAO transfers LDO to reward manager contract
 # 4. 1INCH distributor transfers tokens to farming contract directly
 # 5. Someone starts new reward period (1INCH via their distributor, LDO via reward manager)
@@ -38,25 +29,19 @@ def test_happy_path(
     steth_token,
     dai_token,
     one_inch_token,
+    farming_rewards,
+    mooniswap,
     dao_voting_impersonated,
-    dao_agent,
+    dao_agent
 ):
     rewards_period = initial_rewards_duration_sec
     dai_holder = "0xa405445ff6ed916b820a744621ef473b260b0c1c"
 
-    # Deploy dependency contracts (should be removed when they will be available on-chain)
-    mooniswap_factory = MooniswapFactoryGovernance.deploy(ZERO_ADDRESS, {"from": stranger})
-    mooniswap = Mooniswap.deploy(steth_token, dai_token, "stETH-DAI Liquidity Pool Token", "LP", mooniswap_factory, {"from": stranger})
-    farming_rewards = FarmingRewards.deploy(mooniswap, one_inch_token, rewards_period, stranger, scale, {"from": stranger})
-
     # Deploy and configure rewards manager
-    rewards_manager = RewardsManager.deploy({"from": ape})
+    rewards_manager = RewardsManager.deploy(farming_rewards, {"from": ape})
 
-    rewards_manager.set_rewards_contract(farming_rewards, {"from": ape})
-    rewards_manager.set_gift_index(1, {"from": ape})
-
-    # Reward farming contract adds LDO token as gift with reward manager as distributor
-    farming_rewards.addGift(ldo_token, rewards_period, rewards_manager, scale, {"from": stranger})
+    # Reward farming contract sets reward manager as distributor for LDO token gift
+    farming_rewards.setRewardDistribution(gift_index, rewards_manager, {"from": farming_rewards_owner})
 
     # DAO transfers LDO tokens to reward manager
     assert ldo_token.balanceOf(dao_agent) >= rewards_amount
@@ -76,7 +61,7 @@ def test_happy_path(
 
     # Someone starts new reward period
     # 1INCH via their distributor
-    farming_rewards.notifyRewardAmount(0, rewards_amount, {"from": stranger})
+    farming_rewards.notifyRewardAmount(0, rewards_amount, {"from": farming_rewards_owner})
 
     # LDO via reward manager
     rewards_manager.start_next_rewards_period({"from": stranger})
