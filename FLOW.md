@@ -6,9 +6,9 @@
 - stETH token - [`0xae7ab96520de3a18e5e111b5eaab095312d7fe84`](https://etherscan.io/token/0xae7ab96520de3a18e5e111b5eaab095312d7fe84)
 - DAI token - [`0x6b175474e89094c44da98b954eedeac495271d0f`](https://etherscan.io/token/0x6b175474e89094c44da98b954eedeac495271d0f)
 - 1INCH token - [`0x111111111117dc0aa78b770fa6a738034120c302`](https://etherscan.io/token/0x111111111117dc0aa78b770fa6a738034120c302)
-- 1INCH liquidity pool - [`Mooniswap`](https://github.com/1inch/liquidity-protocol/blob/master/contracts/Mooniswap.sol)
-- 1INCH rewards contract - [`FarmingRewards`](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol)
-- LIDO rewards manager - [`RewardsManager`](https://github.com/maddevsio/lido/blob/main/contracts/RewardsManager.sol)
+- 1INCH liquidity pool - [`Mooniswap`](https://etherscan.io/address/0xC1A900Ae76dB21dC5aa8E418Ac0F4E888A4C7431) ([source](https://github.com/1inch/liquidity-protocol/blob/master/contracts/Mooniswap.sol))
+- 1INCH rewards contract - [`FarmingRewards`](https://etherscan.io/address/0xd7012cdebf10d5b352c601563aa3a8d1795a3f52) ([source](https://github.com/1inch/liquidity-protocol/blob/master/contracts/inch/farming/FarmingRewards.sol))
+- LIDO rewards manager - [`RewardsManager`](https://github.com/maddevsio/lido/blob/main/contracts/RewardsManager.vy)
 
 ## Deployment and initialization flow
 
