@@ -6,16 +6,13 @@ from brownie.convert.datatypes import Wei
 ldo_token_address = "0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32"
 dai_address = "0x6b175474e89094c44da98b954eedeac495271d0f"
 steth_token_address = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
-steth_token_kernel = "0xb8ffc3cd6e7cf5a098a1c92f48009765b24088dc"
 one_inch_token_address = "0x111111111117dc0aa78b770fa6a738034120c302"
 one_inch_token_owner = "0x5E89f8d81C74E311458277EA1Be3d3247c7cd7D1"
 lido_dao_agent_address = "0x3e40D73EB977Dc6a537aF587D48316feE66E9C8c"
 lido_dao_voting_address = "0x2e59A20f205bB85a89C53f1936454680651E618e"
-lp_token_address = "0xc5578194d457dcce3f272538d1ad52c68d1ce849"
 farming_rewards_address = "0xd7012cDeBF10d5B352c601563aA3A8D1795A3F52"
 farming_rewards_owner = one_inch_token_owner
 mooniswap_address = "0xC1A900Ae76dB21dC5aa8E418Ac0F4E888A4C7431"
-mooniswap_owner = one_inch_token_owner
 
 gift_index = 1
 gas_price = "90 gwei"
