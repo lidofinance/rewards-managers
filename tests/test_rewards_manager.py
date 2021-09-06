@@ -1,4 +1,4 @@
-from brownie import reverts, ZERO_ADDRESS, chain, accounts, RewardsManager
+from brownie import reverts, ZERO_ADDRESS, chain, RewardsManager
 from utils.config import (
     rewards_amount,
     gift_index,

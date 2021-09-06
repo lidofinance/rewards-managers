@@ -7,7 +7,6 @@ from utils.config import (
     one_inch_token_address,
     lido_dao_agent_address,
     lido_dao_voting_address,
-    rewards_amount,
     scale,
     initial_rewards_duration_sec
 )
