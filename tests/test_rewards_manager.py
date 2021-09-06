@@ -2,7 +2,7 @@ from brownie import reverts, ZERO_ADDRESS, chain, accounts, RewardsManager
 from utils.config import (
     rewards_amount,
     gift_index,
-    initial_rewards_duration_sec,
+    initial_rewards_duration_sec
 )
 
 
@@ -64,11 +64,7 @@ def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, dao_age
 
 
 def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, dao_agent, stranger):
-    if not rewards_manager.is_rewards_period_finished({"from": stranger}):
-        chain.sleep(rewards_manager.period_finish() + 1)
-        chain.mine()
-
-        assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
     rewards_manager.start_next_rewards_period({"from": stranger})
@@ -85,11 +81,7 @@ def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewar
 
 
 def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, dao_agent, stranger):
-    if not rewards_manager.is_rewards_period_finished({"from": stranger}):
-        chain.sleep(rewards_manager.period_finish() + 1)
-        chain.mine()
-
-        assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
+    assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
     ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
     rewards_manager.start_next_rewards_period({"from": stranger})

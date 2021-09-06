@@ -1,35 +1,39 @@
 import pytest
-from brownie import ZERO_ADDRESS, RewardsManager
+from brownie import ZERO_ADDRESS, RewardsManager, FarmingRewards, MooniswapFactoryGovernance, Mooniswap
 from utils.config import (
-    gift_index,
     ldo_token_address,
     steth_token_address,
     dai_address,
     one_inch_token_address,
     lido_dao_agent_address,
-    farming_rewards_address,
-    farming_rewards_owner,
-    mooniswap_address
+    lido_dao_voting_address,
+    rewards_amount,
+    scale,
+    initial_rewards_duration_sec
 )
 
 
 @pytest.fixture(scope="function")
-def rewards_manager(ape, farming_rewards):
-    manager = RewardsManager.deploy(farming_rewards, {"from": ape})
-
-    farming_rewards.setRewardDistribution(gift_index, manager, {"from": farming_rewards_owner})
-
-    return manager
+def rewards_manager(ape, farming_rewards, ldo_token):
+    rewards_manager_contract = RewardsManager.deploy(farming_rewards, {"from": ape})
+    assert farming_rewards.addGift(ldo_token, initial_rewards_duration_sec, rewards_manager_contract, scale, {"from": ape})
+    return rewards_manager_contract
 
 
 @pytest.fixture(scope="function")
-def mooniswap(interface):
-    return interface.Mooniswap(mooniswap_address)
+def mooniswap_factory(ape):
+    return MooniswapFactoryGovernance.deploy(ZERO_ADDRESS, {"from": ape})
 
 
 @pytest.fixture(scope="function")
-def farming_rewards(interface):
-    return interface.FarmingRewards(farming_rewards_address)
+def mooniswap(ape, mooniswap_factory):
+    return Mooniswap.deploy(steth_token_address, dai_address, "stETH-DAI Liquidity Pool Token", "LP", mooniswap_factory, {"from": ape})
+
+
+@pytest.fixture(scope="function")
+def farming_rewards(ape, mooniswap, one_inch_token):
+    farming_rewards_contract = FarmingRewards.deploy(mooniswap, one_inch_token, initial_rewards_duration_sec, ape, scale, {"from": ape})
+    return farming_rewards_contract
 
 
 @pytest.fixture(scope="module")
@@ -64,7 +68,7 @@ def one_inch_token(interface):
 
 @pytest.fixture(scope="module")
 def dao_voting_impersonated(accounts):
-    return accounts.at("0x2e59A20f205bB85a89C53f1936454680651E618e", force=True)
+    return accounts.at(lido_dao_voting_address, force=True)
 
 
 @pytest.fixture(scope="module")
