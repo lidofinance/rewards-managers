@@ -39,7 +39,7 @@ def test_happy_path(
     dai_holder = "0xa405445ff6ed916b820a744621ef473b260b0c1c"
 
     # Deploy and configure rewards manager
-    rewards_manager = deploy_manager({"from": ape})
+    rewards_manager = deploy_manager({"from": ape}, publish_source=False)
 
     # Reward farming contract sets reward manager as distributor for LDO token gift
     farming_rewards.setRewardDistribution(gift_index, rewards_manager, {"from": farming_rewards_owner})
