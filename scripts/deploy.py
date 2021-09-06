@@ -12,7 +12,7 @@ from utils.config import (
 )
 
 
-def deploy_manager(tx_params, publish_source):
+def deploy_manager(tx_params, publish_source=False):
     # Etherscan doesn't support Vyper verification yet
     manager = RewardsManager.deploy(farming_rewards_address, tx_params, publish_source=publish_source)
 
