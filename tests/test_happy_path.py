@@ -4,6 +4,8 @@ from utils.config import (
     gift_index,
     one_inch_token_owner,
     farming_rewards_owner,
+    farming_rewards_address,
+    mooniswap_address,
     initial_rewards_duration_sec,
     rewards_amount,
 )
@@ -22,7 +24,16 @@ from utils.config import (
 # 11. User B exists from reward farming contract after full rewarding period
 # 12. User B withdraws tokens from liquidity pool
 # 13. User B has more rewards than A
+# ------- SECOND PERIOD -------
+# 14. DAO transfers LDO to reward manager contract
+# 15. 1INCH distributor transfers tokens to farming contract directly
+# 16. Someone starts new reward period (1INCH via their distributor, LDO via reward manager)
+# 17. Users A deposits some stETH and DAI tokens to liquidity pool to receive LP tokens
+# 18. Users A stakes LP tokens to reward farming contract
+# 19. User A exists from reward farming contract after an end of rewarding period
+# 20. User A withdraws tokens from liquidity pool
 def test_happy_path(
+    interface,
     accounts,
     ape,
     stranger,
@@ -30,13 +41,14 @@ def test_happy_path(
     steth_token,
     dai_token,
     one_inch_token,
-    farming_rewards,
-    mooniswap,
     dao_voting_impersonated,
     dao_agent
 ):
     rewards_period = initial_rewards_duration_sec
     dai_holder = "0xa405445ff6ed916b820a744621ef473b260b0c1c"
+
+    mooniswap = interface.Mooniswap(mooniswap_address)
+    farming_rewards = interface.FarmingRewards(farming_rewards_address)
 
     # Deploy and configure rewards manager
     rewards_manager = deploy_manager({"from": ape}, publish_source=False)
@@ -66,6 +78,9 @@ def test_happy_path(
 
     # LDO via reward manager
     rewards_manager.start_next_rewards_period({"from": stranger})
+
+    assert ldo_token.balanceOf(rewards_manager) == 0
+    assert ldo_token.balanceOf(farming_rewards) == rewards_amount
 
     assert rewards_manager.is_rewards_period_finished() == False
 
@@ -175,3 +190,64 @@ def test_happy_path(
     # User B has more rewards than A
     assert user_a_ldo_balance_after < user_b_ldo_balance_after
     assert user_a_one_inch_balance_after < user_b_one_inch_balance_after
+
+    # ------------------------------
+    # SECOND ITERATION
+    # ------------------------------
+
+    # DAO transfers LDO tokens to reward manager
+    assert ldo_token.balanceOf(dao_agent) >= rewards_amount
+
+    transfer_calldata = ldo_token.transfer.encode_input(rewards_manager, rewards_amount)
+
+    dao_agent.execute(
+        ldo_token, 0, transfer_calldata, {"from": dao_voting_impersonated}
+    )
+
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+    # 1INCH distributor transfers tokens to farming contract directly
+    one_inch_token.transfer(farming_rewards, rewards_amount, {"from": one_inch_token_owner})
+
+    assert one_inch_token.balanceOf(farming_rewards) >= rewards_amount
+
+    # Someone starts new reward period
+    # 1INCH via their distributor
+    farming_rewards.notifyRewardAmount(0, rewards_amount, {"from": farming_rewards_owner})
+
+    # Some tokens may be left after previous rewarding period
+    fr_ldo_balance_before = ldo_token.balanceOf(farming_rewards)
+
+    # LDO via reward manager
+    rewards_manager.start_next_rewards_period({"from": stranger})
+
+    fr_ldo_balance_after = ldo_token.balanceOf(farming_rewards)
+
+    assert ldo_token.balanceOf(rewards_manager) == 0
+    assert fr_ldo_balance_after == fr_ldo_balance_before + rewards_amount
+
+    # Users A deposits some stETH and DAI tokens to liquidity pool to receive LP tokens
+    assert rewards_manager.is_rewards_period_finished() == False
+
+    steth_token.approve(mooniswap, 1000, {"from": user_a})
+    dai_token.approve(mooniswap, 1000, {"from": user_a})
+
+    mooniswap.deposit([1000, 1000], [500, 500], {"from": user_a})
+
+    user_a_balance_lp = mooniswap.balanceOf(user_a)
+
+    mooniswap.approve(farming_rewards, user_a_balance_lp, {"from": user_a})
+
+    # Users A stakes LP tokens to reward farming contract
+    farming_rewards.stake(user_a_balance_lp, {"from": user_a})
+
+    # User A exists from reward farming contract after an end of rewarding period
+    chain.sleep(rewards_period)
+    chain.mine()
+
+    assert rewards_manager.is_rewards_period_finished() == True
+
+    farming_rewards.exit({"from": user_a})
+
+    # User A withdraws tokens from liquidity pool
+    mooniswap.withdraw(mooniswap.balanceOf(user_a), [750, 750], {"from": user_a})
