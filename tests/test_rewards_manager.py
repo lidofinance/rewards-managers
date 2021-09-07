@@ -138,6 +138,20 @@ def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, dao_age
 
     tx = rewards_manager.recover_erc20(ldo_token, rewards_amount, ape, {"from": ape})
 
+    assert len(tx.events) == 0
+    assert ldo_token.balanceOf(ape) == 0
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+
+def test_owner_recovers_erc20_zero_amount(rewards_manager, ldo_token, dao_agent, ape):
+    assert ldo_token.balanceOf(rewards_manager) == 0
+
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
+
+    assert ldo_token.balanceOf(rewards_manager) == rewards_amount
+
+    tx = rewards_manager.recover_erc20(ldo_token, 0, ape, {"from": ape})
+
     assert len(tx.events) == 1
     assert tx.events['ERC20TokenRecovered']['token'] == ldo_token
     assert tx.events['ERC20TokenRecovered']['amount'] == rewards_amount
