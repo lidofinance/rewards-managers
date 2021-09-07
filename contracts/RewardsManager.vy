@@ -39,7 +39,6 @@ GIFT_INDEX: constant(uint256) = 1
 rewards_contract: public(address)
 ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
 rewards_initializer: public(address)
-rewards_initialized: public(bool)
 
 
 @external
@@ -105,13 +104,12 @@ def start_next_rewards_period():
         and transferring `ldo_token.balanceOf(self)` tokens to `FarmingRewards`.
         The `FarmingRewards` contract handles all the rest on its own.
         The current rewards period must be finished by this time.
+        First period could be started only by `self.rewards_initializer`
     """
-    rewards_initialized: bool = self.rewards_initialized
-    assert rewards_initialized or self.rewards_initializer == msg.sender, "manager: not initialized"
-    if rewards_initialized == False:
-        self.rewards_initialized = True
-
     rewards: address = self.rewards_contract
+
+    assert self._period_finish(rewards) > 0 or self.rewards_initializer == msg.sender, "manager: not initialized"
+    
     amount: uint256 = ERC20(ldo_token).balanceOf(self)
 
     assert amount != 0, "manager: rewards disabled"
