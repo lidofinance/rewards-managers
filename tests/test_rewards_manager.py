@@ -134,3 +134,14 @@ def test_owner_recovers_erc20_to_stranger_address(rewards_manager, ldo_token, da
     assert tx.events['ERC20TokenRecovered']['recipient'] == stranger
 
     assert ldo_token.balanceOf(stranger) == rewards_amount
+
+
+def test_update_rewards_period_duration(rewards_manager, ape, farming_rewards, stranger):
+    with reverts('manager: not permitted'):
+        rewards_manager.set_rewards_period_duration(1000, {"from": stranger})
+    
+    print(farming_rewards.tokenRewards(gift_index))
+
+    assert farming_rewards.tokenRewards(gift_index)[2] == initial_rewards_duration_sec
+    rewards_manager.set_rewards_period_duration(1000, {"from": ape})
+    assert farming_rewards.tokenRewards(gift_index)[2] == 1000

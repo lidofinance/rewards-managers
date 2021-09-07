@@ -3,6 +3,7 @@
 # @license MIT
 from vyper.interfaces import ERC20
 
+
 struct TokenReward:
     gift_token: address
     scale: uint256
@@ -13,9 +14,11 @@ struct TokenReward:
     last_update_time: uint256
     reward_per_token_stored: uint256
 
+
 interface FarmingRewards:
     def tokenRewards(index: uint256) -> TokenReward: view
     def notifyRewardAmount(index: uint256, reward: uint256): nonpayable
+    def setDuration(i: uint256, duration: uint256): nonpayable
 
 
 event OwnershipTransferred: 
@@ -30,10 +33,12 @@ event ERC20TokenRecovered:
     amount: uint256
     recipient: indexed(address)
 
+
 owner: public(address)
 GIFT_INDEX: constant(uint256) = 1
 rewards_contract: public(address)
 ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
+
 
 @external
 def __init__(_rewards_contract: address):
@@ -65,10 +70,12 @@ def _period_finish(rewards_contract: address) -> uint256:
     reward: TokenReward = FarmingRewards(rewards_contract).tokenRewards(GIFT_INDEX)
     return reward.period_finish
 
+
 @view
 @internal
 def _is_rewards_period_finished(rewards_contract: address) -> bool:
     return block.timestamp >= self._period_finish(rewards_contract)
+
 
 @view
 @external
@@ -78,10 +85,12 @@ def is_rewards_period_finished() -> bool:
     """
     return self._is_rewards_period_finished(self.rewards_contract)
 
+
 @view
 @external
 def period_finish() -> uint256:
     return self._period_finish(self.rewards_contract)
+
 
 @external
 def start_next_rewards_period():
@@ -101,6 +110,17 @@ def start_next_rewards_period():
     assert ERC20(ldo_token).transfer(rewards, amount), "manager: unable to transfer reward tokens"
 
     FarmingRewards(rewards).notifyRewardAmount(GIFT_INDEX, amount)
+
+
+@external
+def set_rewards_period_duration(_duration: uint256):
+    """
+    @notice
+        Updates period duration.  Can only be called by the owner.
+    """
+    assert msg.sender == self.owner, "manager: not permitted"
+
+    FarmingRewards(self.rewards_contract).setDuration(GIFT_INDEX, _duration)
 
 
 @external
