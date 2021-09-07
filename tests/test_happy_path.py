@@ -42,7 +42,8 @@ def test_happy_path(
     dai_token,
     one_inch_token,
     dao_voting_impersonated,
-    dao_agent
+    dao_agent,
+    rewards_initializer
 ):
     rewards_period = initial_rewards_duration_sec
     dai_holder = "0xa405445ff6ed916b820a744621ef473b260b0c1c"
@@ -51,7 +52,7 @@ def test_happy_path(
     farming_rewards = interface.FarmingRewards(farming_rewards_address)
 
     # Deploy and configure rewards manager
-    rewards_manager = deploy_manager({"from": ape}, publish_source=False)
+    rewards_manager = deploy_manager(rewards_initializer, {"from": ape}, publish_source=False)
 
     # Reward farming contract sets reward manager as distributor for LDO token gift
     farming_rewards.setRewardDistribution(gift_index, rewards_manager, {"from": farming_rewards_owner})
@@ -77,7 +78,7 @@ def test_happy_path(
     farming_rewards.notifyRewardAmount(0, rewards_amount, {"from": farming_rewards_owner})
 
     # LDO via reward manager
-    rewards_manager.start_next_rewards_period({"from": stranger})
+    rewards_manager.start_next_rewards_period({"from": rewards_initializer})
 
     assert ldo_token.balanceOf(rewards_manager) == 0
     assert ldo_token.balanceOf(farming_rewards) == rewards_amount

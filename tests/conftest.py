@@ -17,8 +17,8 @@ def shared_setup(fn_isolation):
 
 
 @pytest.fixture(scope="function")
-def rewards_manager(ape, farming_rewards, ldo_token):
-    rewards_manager_contract = RewardsManager.deploy(farming_rewards, {"from": ape})
+def rewards_manager(ape, farming_rewards, ldo_token, rewards_initializer):
+    rewards_manager_contract = RewardsManager.deploy(farming_rewards, rewards_initializer, {"from": ape})
     assert farming_rewards.addGift(ldo_token, initial_rewards_duration_sec, rewards_manager_contract, scale, {"from": ape})
     return rewards_manager_contract
 
@@ -47,6 +47,11 @@ def ape(accounts):
 @pytest.fixture(scope="module")
 def stranger(accounts):
     return accounts[1]
+
+
+@pytest.fixture(scope="module")
+def rewards_initializer(accounts):
+    return accounts[2]
 
 
 @pytest.fixture(scope="module")

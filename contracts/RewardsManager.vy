@@ -38,16 +38,21 @@ owner: public(address)
 GIFT_INDEX: constant(uint256) = 1
 rewards_contract: public(address)
 ldo_token: constant(address) = 0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32
+rewards_initializer: public(address)
+rewards_initialized: public(bool)
 
 
 @external
-def __init__(_rewards_contract: address):
-    assert _rewards_contract != ZERO_ADDRESS, "zero address"
+def __init__(_rewards_contract: address, _rewards_initializer: address):
+    assert _rewards_contract != ZERO_ADDRESS, "rewards contract: zero address"
+    assert _rewards_initializer != ZERO_ADDRESS, "rewards initializer: zero address"
     self.rewards_contract = _rewards_contract
     log RewardsContractSet(_rewards_contract)
 
     self.owner = msg.sender
     log OwnershipTransferred(ZERO_ADDRESS, msg.sender)
+
+    self.rewards_initializer = _rewards_initializer
 
 
 @external
@@ -101,6 +106,10 @@ def start_next_rewards_period():
         The `FarmingRewards` contract handles all the rest on its own.
         The current rewards period must be finished by this time.
     """
+    assert self.rewards_initialized or self.rewards_initializer == msg.sender, "manager: not initialized"
+    if self.rewards_initialized == False:
+        self.rewards_initialized = True
+
     rewards: address = self.rewards_contract
     amount: uint256 = ERC20(ldo_token).balanceOf(self)
 

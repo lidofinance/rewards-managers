@@ -8,13 +8,14 @@ from utils.config import (
     gas_price,
     get_is_live,
     get_deployer_account,
-    prompt_bool
+    prompt_bool,
+    get_env
 )
 
 
-def deploy_manager(tx_params, publish_source=False):
+def deploy_manager(rewards_initializer, tx_params, publish_source=False):
     # Etherscan doesn't support Vyper verification yet
-    manager = RewardsManager.deploy(farming_rewards_address, tx_params, publish_source=publish_source)
+    manager = RewardsManager.deploy(farming_rewards_address, rewards_initializer, tx_params, publish_source=publish_source)
 
     assert manager.rewards_contract() == farming_rewards_address
 
@@ -28,9 +29,11 @@ def deploy_manager(tx_params, publish_source=False):
 def main():
     is_live = get_is_live()
     deployer = get_deployer_account(is_live)
+    rewards_initializer = get_env('REWARDS_INITIALIZER')
 
     print('Deployer:', deployer)
     print('Reward farming address:', farming_rewards_address)
+    print('Rewards initializer address:', rewards_initializer)
     print('Gas price:', gas_price)
 
     sys.stdout.write('Proceed? [y/n]: ')
@@ -40,6 +43,7 @@ def main():
         return
 
     deploy_manager(
+        rewards_initializer,
         tx_params={"from": deployer, "gas_price": Wei(gas_price), "required_confs": 1},
         publish_source=is_live
     )
