@@ -1,6 +1,9 @@
-import pytest
-from brownie import reverts, ZERO_ADDRESS, chain, accounts, RewardsManager
-from utils.config import lido_dao_agent_address, rewards_amount, gift_index
+from brownie import reverts, ZERO_ADDRESS, chain, RewardsManager
+from utils.config import (
+    rewards_amount,
+    gift_index,
+    initial_rewards_duration_sec
+)
 
 
 def test_owner_is_deployer(rewards_manager, farming_rewards, ape):
@@ -13,7 +16,7 @@ def test_owner_is_deployer(rewards_manager, farming_rewards, ape):
 
 def test_rewards_contract_address_is_not_zero(ape):
     with reverts("zero address"):
-        rewards_manager_ = RewardsManager.deploy(ZERO_ADDRESS, {"from": ape})
+        RewardsManager.deploy(ZERO_ADDRESS, {"from": ape})
 
 
 def test_stranger_cannot_transfer_ownership(rewards_manager, stranger):
@@ -49,8 +52,8 @@ def test_stranger_cannot_start_next_rewards_period_with_zero_amount(rewards_mana
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, stranger):
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, dao_agent, stranger):
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
 
     assert ldo_token.balanceOf(rewards_manager) > 0
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
@@ -60,10 +63,10 @@ def test_stranger_starts_next_rewards_period(rewards_manager, ldo_token, strange
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
 
-def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, stranger):
+def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewards_manager, ldo_token, dao_agent, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
     chain.sleep(1)
@@ -71,24 +74,24 @@ def test_stranger_cannot_start_next_rewards_period_while_current_is_active(rewar
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
 
     with reverts("manager: rewards period not finished"):
         rewards_manager.start_next_rewards_period({"from": stranger})
 
 
-def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, stranger):
+def test_stranger_can_start_next_rewards_period_after_current_is_finished(rewards_manager, ldo_token, dao_agent, stranger):
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
-    chain.sleep(1000000)
+    chain.sleep(initial_rewards_duration_sec * 2)
     chain.mine()
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == True
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
     rewards_manager.start_next_rewards_period({"from": stranger})
 
     assert rewards_manager.is_rewards_period_finished({"from": stranger}) == False
@@ -99,13 +102,15 @@ def test_stranger_cannot_recover_erc20(rewards_manager, ldo_token, stranger):
         rewards_manager.recover_erc20(ldo_token, 0, {"from": stranger})
 
 
-def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
+def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, dao_agent, ape):
     assert ldo_token.balanceOf(rewards_manager) == 0
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
+
     assert ldo_token.balanceOf(rewards_manager) == rewards_amount
 
     tx = rewards_manager.recover_erc20(ldo_token, rewards_amount, ape, {"from": ape})
+
     assert len(tx.events) == 1
     assert tx.events['ERC20TokenRecovered']['token'] == ldo_token
     assert tx.events['ERC20TokenRecovered']['amount'] == rewards_amount
@@ -114,13 +119,15 @@ def test_owner_recovers_erc20_to_own_address(rewards_manager, ldo_token, ape):
     assert ldo_token.balanceOf(ape) == rewards_amount
 
 
-def test_owner_recovers_erc20_to_stranger_address(rewards_manager, ldo_token, ape, stranger):
+def test_owner_recovers_erc20_to_stranger_address(rewards_manager, ldo_token, dao_agent, ape, stranger):
     assert ldo_token.balanceOf(rewards_manager) == 0
 
-    ldo_token.transfer(rewards_manager, rewards_amount, {"from": accounts.at(lido_dao_agent_address, force=True)})
+    ldo_token.transfer(rewards_manager, rewards_amount, {"from": dao_agent})
+
     assert ldo_token.balanceOf(rewards_manager) == rewards_amount
 
     tx = rewards_manager.recover_erc20(ldo_token, rewards_amount, stranger, {"from": ape})
+
     assert len(tx.events) == 1
     assert tx.events['ERC20TokenRecovered']['token'] == ldo_token
     assert tx.events['ERC20TokenRecovered']['amount'] == rewards_amount
