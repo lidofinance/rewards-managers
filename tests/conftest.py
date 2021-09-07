@@ -11,6 +11,10 @@ from utils.config import (
     initial_rewards_duration_sec
 )
 
+@pytest.fixture(scope="function", autouse=True)
+def shared_setup(fn_isolation):
+    pass
+
 
 @pytest.fixture(scope="function")
 def rewards_manager(ape, farming_rewards, ldo_token):
