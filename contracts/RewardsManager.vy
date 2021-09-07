@@ -106,8 +106,9 @@ def start_next_rewards_period():
         The `FarmingRewards` contract handles all the rest on its own.
         The current rewards period must be finished by this time.
     """
-    assert self.rewards_initialized or self.rewards_initializer == msg.sender, "manager: not initialized"
-    if self.rewards_initialized == False:
+    rewards_initialized: bool = self.rewards_initialized
+    assert rewards_initialized or self.rewards_initializer == msg.sender, "manager: not initialized"
+    if rewards_initialized == False:
         self.rewards_initialized = True
 
     rewards: address = self.rewards_contract
