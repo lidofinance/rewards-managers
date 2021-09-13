@@ -1,0 +1,27 @@
+{
+  "name": "1inch-lido",
+  "version": "1.0.0",
+  "repository": "https://github.com/maddevsio/lido.git",
+  "author": "Folks from Mad Devs",
+  "license": "MIT",
+  "dependencies": {
+    "ethlint": "^0.0.0",
+    "husky": "^6.0.0",
+    "prettier": "^2.3.0",
+    "prettier-plugin-solidity": "^1.0.0-beta.10",
+    "pretty-quick": "^3.1.0"
+  },
+  "scripts": {
+    "lint": "pretty-quick --pattern '**/*.*(sol|json)' --verbose",
+    "lint:check": "prettier --check **/*.sol **/*.json",
+    "lint:fix": "pretty-quick --pattern '**/*.*(sol|json)' --staged --verbose"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint:fix"
+    }
+  },
+  "devDependencies": {
+    "recursive-copy": "^2.0.13"
+  }
+}
